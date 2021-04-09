@@ -71,20 +71,6 @@ class MySetRangeNode(omm.MPxNode):
         thisNode.attributeAffects(thisNode.oldMinMax,thisNode.outValue)
         thisNode.attributeAffects(thisNode.value,thisNode.outValue)
 
-
-
-        """
-        thisNode.zipper = mFnFloatAttr.create("zipper","zip",om.MFnNumericData.kFloat, 0.0)
-        mFnFloatAttr.setMin(0.0)
-        mFnFloatAttr.setMax(10.0)
-        mFnFloatAttr.setKeyable(True)
-        thisNode.addAttribute(thisNode.zipper)
-        """
-
-
-
-
-
     def compute(self,plug,dataBlock):
         thisNode = self.thisMObject()
 
@@ -127,12 +113,6 @@ class MySetRangeNode(omm.MPxNode):
         else:
             om.kUnknownParameter
         
-
-
-
-
-
-
 
 def initializePlugin(obj):
     thisNode = MySetRangeNode
