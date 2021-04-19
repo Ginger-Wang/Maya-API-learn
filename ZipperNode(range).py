@@ -1,16 +1,15 @@
 # -*- coding: UTF-8 -*-
-import sys, math
-from maya import OpenMaya, OpenMayaMPx, cmds, mel
-
+import sys 
+from maya import OpenMaya, OpenMayaMPx
 om = OpenMaya
 omm = OpenMayaMPx
 
-
 class CreateZipperNode(omm.MPxNode):
-    kNodeName = "newAZipperNode"
+    kNodeName = "newZipperNode"
     kTypeID = om.MTypeId(0x01021)
-    bias = om.MObject()
     zip = om.MObject()
+    zipType = om.MObject()
+    attenuation = om.MObject()
     input = om.MObject()
     inputTarget = om.MObject()
     outCurve = om.MObject()
@@ -27,6 +26,21 @@ class CreateZipperNode(omm.MPxNode):
         thisNode = CreateZipperNode
         mFnNumAttr = om.MFnNumericAttribute()
         mFnTypeAttr = om.MFnTypedAttribute()
+        mFnEnumAttr = om.MFnEnumAttribute()
+
+        thisNode.zipType = mFnEnumAttr.create("zipType","zt")
+        for feild,value in zip(["Tip","End","BothEnd"],range(3)):
+            mFnEnumAttr.addField(feild,value)
+        mFnEnumAttr.setWritable(True)
+        mFnEnumAttr.setStorable(True)
+        mFnEnumAttr.setKeyable(True)
+        thisNode.addAttribute(thisNode.zipType)
+
+        thisNode.attenuation = mFnNumAttr.create("attenuation","at",om.MFnNumericData.kFloat,1.0)
+        mFnNumAttr.setKeyable(True)
+        mFnNumAttr.setMin(1.0)
+        mFnNumAttr.setMax(10.0)
+        thisNode.addAttribute(thisNode.attenuation)
 
         thisNode.zip = mFnNumAttr.create("zip", "zip", om.MFnNumericData.kFloat, 0.0)
         mFnNumAttr.setKeyable(True)
@@ -56,21 +70,25 @@ class CreateZipperNode(omm.MPxNode):
         thisNode.attributeAffects(thisNode.input, thisNode.outCurve)
         #thisNode.attributeAffects(thisNode.bias, thisNode.outCurve)
         thisNode.attributeAffects(thisNode.zip, thisNode.outCurve)
+        thisNode.attributeAffects(thisNode.zipType, thisNode.outCurve)
+        thisNode.attributeAffects(thisNode.attenuation, thisNode.outCurve)
 
 
 
     def compute(self, plug, dataBlock):
         if plug == self.outCurve:
             zipHandle = dataBlock.inputValue(self.zip)
+            typeHandle = dataBlock.inputValue(self.zipType)
             targetCurvehandle = dataBlock.inputValue(self.inputTarget)
-
-            # biasValue = biasHandle.asFloat()
+            attenuationHandle = dataBlock.inputValue(self.attenuation)
+            typeValue = typeHandle.asInt()
             zipValue = zipHandle.asFloat()
+            attenuationValue = attenuationHandle.asFloat()
+
             incurveHandle = dataBlock.inputValue(self.input)
             incurveObject = incurveHandle.asNurbsCurve()
             targetCurveObject = targetCurvehandle.asNurbsCurve()
             outCurveHandle = dataBlock.outputValue(self.outCurve)
-            outCurve = outCurveHandle.asNurbsCurve()
             cvs = om.MPointArray()
             if not incurveObject.isNull():
                 curveFn = om.MFnNurbsCurve(incurveObject)
@@ -78,12 +96,15 @@ class CreateZipperNode(omm.MPxNode):
                 curveFn.getCVs(cvs, om.MSpace.kWorld)
                 lenNum = cvs.length()
                 cvsLength = float(lenNum)
+                if cvsLength%2:
+                    halfValue = (cvsLength + 1) / 2.0
+                else:
+                    halfValue = (cvsLength) / 2.0 + 1.0
                 sped = 10.0 / cvsLength
                 mPoint = om.MPoint()
                 cvsPoints = om.MPointArray()
                 cvsPoints.setLength(lenNum)
                 valAt_util = om.MScriptUtil()
-                valAt_util.createFromDouble(0.0)
                 targetMaxParamter = targetCurve.findParamFromLength(targetCurve.length())
                 maxParamter = curveFn.findParamFromLength(curveFn.length())
                 increment = targetMaxParamter / maxParamter
@@ -97,10 +118,23 @@ class CreateZipperNode(omm.MPxNode):
                     points = om.MPoint()
                     parameter = valAt_util.asDoublePtr()
                     curveFn.getParamAtPoint(position, parameter, om.MSpace.kWorld)
-                    targetCurve.getPointAtParam(valAt_util.getDouble(parameter) * increment, points, om.MSpace.kWorld)
-                    oldMin = sped * count
-                    oldMax = sped * (count + 1)
-
+                   targetCurve.getPointAtParam(valAt_util.getDouble(parameter) * increment, points, om.MSpace.kWorld)
+                    if typeValue == 0:
+                        oldMin = sped * (count/attenuationValue)
+                        oldMax = sped * (count + 1)
+                    elif typeValue == 1:
+                        oldMin = sped * ((lenNum-count-1)/attenuationValue)
+                        oldMax = sped * (lenNum-count)
+                    else:
+                        if count < (halfValue-1):
+                            oldMin = sped * count / attenuationValue
+                            oldMax = sped * (count + 1) * 2
+                        elif count > (halfValue-1):
+                            oldMin = sped * ((lenNum - count - 1) / attenuationValue)
+                            oldMax = sped * (lenNum - count) * 2
+                        else:
+                            oldMin = sped * ((lenNum - count - 1) / attenuationValue)
+                            oldMax = 10
                     mPoint.x = getOutputValue(cvs[count].x, points.x, oldMin, oldMax, zipValue)
                     mPoint.y = getOutputValue(cvs[count].y, points.y, oldMin, oldMax, zipValue)
                     mPoint.z = getOutputValue(cvs[count].z, points.z, oldMin, oldMax, zipValue)
@@ -108,7 +142,7 @@ class CreateZipperNode(omm.MPxNode):
                 newCurveFn.setCVs(cvsPoints)
                 newCurveFn.updateCurve()
                 outCurveHandle.setMObject(newCurveData)
-
+                outCurveHandle.setClean()
             dataBlock.setClean(plug)
         else:
             om.kUnknownParameter
@@ -145,3 +179,4 @@ def uninitializePlugin(obj):
 
 
 
+ 
