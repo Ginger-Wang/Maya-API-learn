@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-import sys 
+import sys
 from maya import OpenMaya, OpenMayaMPx
 om = OpenMaya
 omm = OpenMayaMPx
@@ -36,10 +36,11 @@ class CreateZipperNode(omm.MPxNode):
         mFnEnumAttr.setKeyable(True)
         thisNode.addAttribute(thisNode.zipType)
 
-        thisNode.attenuation = mFnNumAttr.create("attenuation","at",om.MFnNumericData.kFloat,1.0)
+        thisNode.attenuation = mFnNumAttr.create("attenuation","at",om.MFnNumericData.kFloat,0.0)
         mFnNumAttr.setKeyable(True)
-        mFnNumAttr.setMin(1.0)
-        mFnNumAttr.setMax(10.0)
+        mFnNumAttr.setMin(0.0)
+        mFnNumAttr.setSoftMax(1.0)
+        mFnNumAttr.setMax(2.0)
         thisNode.addAttribute(thisNode.attenuation)
 
         thisNode.zip = mFnNumAttr.create("zip", "zip", om.MFnNumericData.kFloat, 0.0)
@@ -100,7 +101,7 @@ class CreateZipperNode(omm.MPxNode):
                     halfValue = (cvsLength + 1) / 2.0
                 else:
                     halfValue = (cvsLength) / 2.0 + 1.0
-                sped = 10.0 / cvsLength
+                sped = (10.0 - attenuationValue) / cvsLength
                 mPoint = om.MPoint()
                 cvsPoints = om.MPointArray()
                 cvsPoints.setLength(lenNum)
@@ -118,22 +119,22 @@ class CreateZipperNode(omm.MPxNode):
                     points = om.MPoint()
                     parameter = valAt_util.asDoublePtr()
                     curveFn.getParamAtPoint(position, parameter, om.MSpace.kWorld)
-                   targetCurve.getPointAtParam(valAt_util.getDouble(parameter) * increment, points, om.MSpace.kWorld)
+                    targetCurve.getPointAtParam(valAt_util.getDouble(parameter) * increment, points, om.MSpace.kWorld)
                     if typeValue == 0:
-                        oldMin = sped * (count/attenuationValue)
-                        oldMax = sped * (count + 1)
+                        oldMin = sped * count
+                        oldMax = sped * (count + 1.0) + attenuationValue
                     elif typeValue == 1:
-                        oldMin = sped * ((lenNum-count-1)/attenuationValue)
-                        oldMax = sped * (lenNum-count)
+                        oldMin = sped * (cvsLength-count-1.0)
+                        oldMax = sped * (cvsLength-count) + attenuationValue
                     else:
                         if count < (halfValue-1):
-                            oldMin = sped * count / attenuationValue
-                            oldMax = sped * (count + 1) * 2
+                            oldMin = sped * count
+                            oldMax = sped * (count + 1) * 2.0 + attenuationValue
                         elif count > (halfValue-1):
-                            oldMin = sped * ((lenNum - count - 1) / attenuationValue)
-                            oldMax = sped * (lenNum - count) * 2
+                            oldMin = sped * (cvsLength - count - 1.0)
+                            oldMax = sped * (cvsLength - count) * 2.0 + attenuationValue
                         else:
-                            oldMin = sped * ((lenNum - count - 1) / attenuationValue)
+                            oldMin = sped * (cvsLength - count - 1.0)
                             oldMax = 10
                     mPoint.x = getOutputValue(cvs[count].x, points.x, oldMin, oldMax, zipValue)
                     mPoint.y = getOutputValue(cvs[count].y, points.y, oldMin, oldMax, zipValue)
@@ -176,7 +177,4 @@ def uninitializePlugin(obj):
         pluginFn.deregisterNode(thisNode.kTypeID)
     except:
         sys.stderr.write("Failed to deregister node : %s" % thisNode.kNodeName)
-
-
-
  
