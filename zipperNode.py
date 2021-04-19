@@ -165,6 +165,7 @@ def initializePlugin(obj):
             thisNode.zipperNode_creator,
             thisNode.zipperNode_initalize
         )
+        print("%s initialized..."%(thisNode.kNodeName))
     except:
         sys.stderr.write("Failed to register node: %s" % thisNode.kNodeName)
 
