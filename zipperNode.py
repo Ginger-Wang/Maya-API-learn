@@ -40,7 +40,7 @@ class CreateZipperNode(omm.MPxNode):
         mFnNumAttr.setKeyable(True)
         mFnNumAttr.setMin(0.0)
         mFnNumAttr.setSoftMax(1.0)
-        mFnNumAttr.setMax(5.0)
+        mFnNumAttr.setMax(2.0)
         thisNode.addAttribute(thisNode.attenuation)
 
         thisNode.zip = mFnNumAttr.create("zip", "zip", om.MFnNumericData.kFloat, 0.0)
