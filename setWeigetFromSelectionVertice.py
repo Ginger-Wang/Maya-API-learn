@@ -5,7 +5,7 @@ def setWeigetFromSelectionVertice():
     selectionPoints = pm.ls(sl = 1)
     for point in selectionPoints:
         meshName = point._node
-        numVertices = meshName._numVertices()
+        #numVertices = meshName._numVertices()
         skinClusterName = meshName.listConnections(type = "skinCluster")[0]
         getInfluences = skinClusterName.getInfluence()
         weights = pm.skinPercent(skinClusterName,point,q = 1,v =1)
