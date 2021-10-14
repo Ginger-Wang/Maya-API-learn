@@ -6,10 +6,10 @@ def setJointOrient(newJoint,thisJoint):
     thisJoint.r.set(0,0,0)
     thisJoint.jointOrient.set(jointOrient)
     
-def setJointToZero():    
-    thisJoint = pm.ls(sl = 1)[0]
+def setJointToZero(thisJoint):    
+
     parentJoint = thisJoint.getParent()
-    newJoint = pm.joint()
+    newJoint = pm.createNode("joint",p = jnt,ss = 1)
     if parentJoint:
         parentJoint.addChild(newJoint)
         setJointOrient(newJoint,thisJoint)
@@ -17,7 +17,9 @@ def setJointToZero():
         pm.parent(newJoint,w = 1)
         setJointOrient(newJoint,thisJoint) 
     pm.delete(newJoint)
-    pm.select(thisJoint,r = 1) 
 
 if __name__ == "__main__":
-    setJointToZero()
+    allJoints = pm.ls(sl =1)
+    for jnt in allJoints:
+        setJointToZero(jnt)
+    pm.select(allJoints,r =1)
