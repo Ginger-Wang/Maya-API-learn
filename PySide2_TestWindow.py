@@ -1,17 +1,16 @@
+import sys,os
 from PySide2 import QtWidgets, QtUiTools, QtCore
 import pymel.core as pm
 
-
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self,parent=None):
         super(MainWindow, self).__init__(parent)
-        self.load_ui()
-
-    def load_ui(self):
-        loader = QtUiTools.QUiLoader()
-        self.ui = loader.load("//Cnshasgamefsv1/MGS3/Users/WangJinge/Scripts/animatorsTools/animtorsTools.ui")
-
+        self.set_ui()
+        
     def set_ui(self):
+        file_Path = os.path.dirname(__file__)
+        loader = QtUiTools.QUiLoader()
+        self.ui = loader.load("%s/animtorsTools.ui"%(file_Path))
         myUI = self.ui
         myUI.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         myUI.weight_VerticalSlider.valueChanged.connect(self.__setValue)
@@ -22,6 +21,10 @@ class MainWindow(QtWidgets.QMainWindow):
         myUI.matchTr_pushButton.clicked.connect(self.matchTrButton)
         myUI.matchRo_pushButton.clicked.connect(self.matchRoButton)
         myUI.tabWidget.currentChanged.connect(self.__resetMinmumValue)
+        myUI.replacename_pushButton.clicked.connect(self.searchAndReplace)
+        myUI.addPrefix_pushButton.clicked.connect(self.addPrefix)
+        myUI.addSuffix_pushButton.clicked.connect(self.addSuffix)
+        myUI.rename_pushButton.clicked.connect(self.renameaddNumber)
 
     def applyConstraintButton(self):
         print "applyConstraintButton..."
@@ -33,8 +36,8 @@ class MainWindow(QtWidgets.QMainWindow):
     	second select B Object,
     	then A move to B
     	"""
-        ctrls = self.getCtrls()
-        targetCtrl, sourceCtrl = ctrls[0], ctrls[1]
+    	ctrls = self.getCtrls()
+    	targetCtrl, sourceCtrl = ctrls[0],ctrls[1]
         myUI = self.ui
         isChecked = myUI.world_radioButton.isChecked()
         localIsChecked = myUI.local_radioButton.isChecked()
@@ -44,15 +47,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if localIsChecked:
             tr = sourceCtrl.getTranslation(space="object")
             targetCtrl.setTranslation(tr, space="object")
-        print "matchTrButton..."
+        #print "matchTrButton..."
 
     def matchRoButton(self):
         """only copy Translation,
     	first select A Object,
     	second select B Object,
     	then A Rotate to B"""
-        ctrls = self.getCtrls()
-        targetCtrl, sourceCtrl = ctrls[0], ctrls[1]
+    	ctrls = self.getCtrls()
+    	targetCtrl, sourceCtrl = ctrls[0],ctrls[1]
         myUI = self.ui
         isChecked = myUI.world_radioButton.isChecked()
         localIsChecked = myUI.local_radioButton.isChecked()
@@ -62,15 +65,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if localIsChecked:
             ro = pm.xform(sourceCtrl, q=1, ws=0, ro=1)
             pm.xform(targetCtrl, ws=0, ro=ro)
-        print "matchRoButton..."
+        #print "matchRoButton..."
 
     def matchTranformsButton(self):
         """copy transforms,
     	first select A Object,
     	second select B Object,
     	then A Rotate to B"""
-        ctrls = self.getCtrls()
-        targetCtrl, sourceCtrl = ctrls[0], ctrls[1]
+    	ctrls = self.getCtrls()
+    	targetCtrl, sourceCtrl = ctrls[0],ctrls[1]
         myUI = self.ui
         isChecked = myUI.world_radioButton.isChecked()
         localIsChecked = myUI.local_radioButton.isChecked()
@@ -81,17 +84,28 @@ class MainWindow(QtWidgets.QMainWindow):
             matrix = sourceCtrl.getMatrix(objectSpace=True)
             targetCtrl.setMatrix(matrix, objectSpace=True)
         # aAlign2B()
-        print "matchTranformsButton..."
+        #print "matchTranformsButton..."
 
     def __setValue(self):
+        """
+        Get weight_VerticalSlider vlaue
+        Set to weight_doubleSpinBox vlaue
+        """
         value = self.ui.weight_VerticalSlider.value()
         self.ui.weight_doubleSpinBox.setValue(value / 1000.0)
 
     def __setWeightValue(self):
+        """
+        Get weight_doubleSpinBox vlaue
+        Set to weight_VerticalSlider vlaue
+        """
         value = self.ui.weight_doubleSpinBox.value()
         self.ui.weight_VerticalSlider.setValue(value * 1000.0)
 
     def __resetMinmumValue(self):
+        """
+        Click Select tabWidget and resize the window        
+        """        
         myUI = self.ui
         tabObjectName = myUI.tabWidget.currentWidget()
         tabName = tabObjectName.objectName()
@@ -107,12 +121,59 @@ class MainWindow(QtWidgets.QMainWindow):
             myUI.setMinimumWidth(520)
             myUI.setMinimumHeight(360)
             myUI.resize(QtCore.QSize(520, 360))
-
+            
     def getCtrls(self):
         ctrls = pm.ls(sl=1)
         return ctrls
+    def searchAndReplace(self):
+        """
+        Search and Replace Selected objects name
+        """
+        selectionNames = self.getCtrls()
+        searchText = self.ui.search_lineEdit.text()
+        replaceText = self.ui.replace_lineEdit.text()
+        for name in selectionNames:
+            newName = name.replace(searchText,replaceText)
+            name.rename(newName)
+        #print "searchAndReplace",searchText,replaceText
+    def addPrefix(self):
+        """
+        Add Prefix Selected objects name
+        """
+        prefixText = self.ui.prefix_lineEdit.text()
+        selectionNames = self.getCtrls()
+        for name in selectionNames:
+            newName = "%s%s"%(prefixText,name)
+            name.rename(newName)
+        #print "addPrefix",prefixText
+                        
+    def addSuffix(self):
+        """
+        Add Suffix Selected objects name
+        """
+        suffixText = self.ui.suffix_lineEdit.text()
+        selectionNames = self.getCtrls()
+        for name in selectionNames:
+            newName = "%s%s"%(name,suffixText)
+            name.rename(newName)
+        #print "addSuffix"
 
+    def renameaddNumber(self):
+        """
+        Rename Selected objects name
+        """
+        nameText = self.ui.rename_lineEdit.text()
+        startNumber = self.ui.startNum_spinBox.value()
+        paddingNumber =self.ui.paddingNum_spinBox.value()
+        selectionNames = self.getCtrls()
+        for name in selectionNames:
+            strName = "%s{:0%dd}"%(nameText,paddingNumber)         
+            newName = strName.format(startNumber)
+            name.rename(newName)
+            startNumber+=1
+        #print "renameaddNumber"
 
+           
 if __name__ == "__main__":
     app = QtWidgets.QApplication
     childrenNames = app.activeWindow()
@@ -121,39 +182,7 @@ if __name__ == "__main__":
             print  child.objectName()
             if child.objectName() == "MyTestWindow":
                 child.deleteLater()
-        try:
-            targetCtrl, sourceCtrl = pm.ls(sl=1)[0], pm.ls(sl=1)[1]
-        except Exception, erro:
-            print erro
-            targetCtrl, sourceCtrl = None, None
-        mainwindow = MainWindow()
-        mainwindow.set_ui()
-        mainwindow.ui.show()
-    app.exec_()
 
-        
-        
-'''
-mainwindow.ui.label.setHidden(True)
-mainwindow.ui.checkBox_2.setHidden(True)
-mainwindow.ui.checkBox_3.setHidden(True)
-mainwindow.ui.checkBox_4.setHidden(True)
-value = mainwindow.ui.weight_doubleSpinBox.value()
-mainwindow.ui.weight_VerticalSlider.setValue(value*100)
-mainwindow.ui.weight_VerticalSlider.sliderMoved.connect()
-sliderV = mainwindow.ui.weight_VerticalSlider.value()
-mainwindow.ui.weight_doubleSpinBox.setValue(sliderV/100.0)
-mainwindow.ui.weight_VerticalSlider.valueChanged(
-mainwindow.ui.weight_doubleSpinBox.valueChanged.connect
-mainwindow.ui.add_pushButton.clicked.connect
-myUI.setMinimumHeight(280)
-myUI.setMinimumWidth(360)
-mainwindow.ui.setBaseSize(QSize(340,270))
-mainwindow.ui.resize(QSize(340,270))
-mainwindow.ui.world_radioButton.isChecked()
-mainwindow.ui.tabWidget.currentChanged.connect(
-tabname = mainwindow.ui.tabWidget.currentWidget()
-print tabname.objectName()
-textname = mainwindow.ui.search_lineEdit.text()
-print textname()
-'''
+    mainwindow = MainWindow()
+    mainwindow.ui.show()
+    app.exec_()
