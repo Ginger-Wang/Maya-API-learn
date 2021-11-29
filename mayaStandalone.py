@@ -6,8 +6,7 @@ from maya import cmds,standalone
 #standalone.initialize()
 
 file_Path, fileName = os.path.split(__file__)
-# path = '//Cnshasgamefsv1/MGS3/Users/WangJinge/Scripts/test'
-uiName = "standalone.ui"
+uiName = "MayaStandalone.ui"
 uiPath = os.path.join(file_Path, uiName)
 
 class ExportFiles(QtWidgets.QMainWindow):
@@ -77,9 +76,10 @@ if __name__ == "__main__":
     mainwindow.ui.show()
     sys.exit(app.exec_())
 '''
-
-@echo off
-cmd /k mayapy D:\MayaPycharm\mayaStandalone.py
+echo start
+cd %cd%
+call mayapy mayaStandalone.py
+pause
 
 后台运行Maya输出打印场景中的所有骨骼，以上是bat批处理运行此代码
 '''
