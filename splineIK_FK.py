@@ -42,9 +42,10 @@ def createRootCtrl(name = "Main"):
 	return ctrlName
 	
 def createSplineIKRootCtrl(grp,name = "Test"):
-	splineRootCtrl = pm.curve(p=[(0.6, 0, 1), (1.15, 0, 0), (0.6, 0, -1),(-0.6, 0, -1),(-1.15, 0, 0), (-0.6, 0, 1),(0.6, 0, 1)],d=1,name='{0}RootCtrl'.format(name))
+	splineRootCtrl = pm.curve(p=[(0.0, 0.6, 1), (0,1.15, 0), (0, 0.6, -1),(0, -0.6, -1),(0, -1.15, 0), (0, -0.6, 1),(0, 0.6, 1)],d=1,name='{0}RootCtrl'.format(name))
 	grp.addChild(splineRootCtrl)
 	splineRootCtrl.t.set(0,0,0)
+	splineRootCtrl.r.set(0,0,0)
 	shape = splineRootCtrl.getShape()
 	shape.overrideEnabled.set(1)
 	shape.overrideColor.set(6)
@@ -72,6 +73,7 @@ def getPositions(joints):
     return positions       
 
 def createIKSplinecurve(ctrlGrp,positions,number,name = 'Test'):
+    ro = ctrlGrp.getRotation(worldSpace = 1)
     if number == 2:
         dergee = 1
     elif number == 3:
@@ -80,7 +82,7 @@ def createIKSplinecurve(ctrlGrp,positions,number,name = 'Test'):
         dergee = 3    
     curveName,curveShapeName = createCurve(positions,d = 3,name = '%s_solCurve'%(name))    
     ctrlGrp.addChild(curveName)
-
+    curveName.t.set(0,0,0),curveName.r.set(0,0,0)
     cvList = curveShapeName.cv[:]
     indices = cvList.indices()
     pocNumber = len(indices)
@@ -93,13 +95,15 @@ def createIKSplinecurve(ctrlGrp,positions,number,name = 'Test'):
         pm.refresh()
     ikCtrlCrv,ikCtrlCrvShape= createCurve(pos,d = dergee,name = '%s_spineIKCtrlCurve'%(name))        
     ctrlGrp.addChild(ikCtrlCrv)
+    ikCtrlCrv.t.set(0,0,0),ikCtrlCrv.r.set(0,0,0)
     pocLength,pocCurveLength = getIncrement(ikCtrlCrvShape,pocNumber)
     multiply = pocCurveLength/5.0
-    for num in range(number):
-        pmaName,zeroGroup = createIKCtrl(ctrlGrp,name = name,num = num+1,multiply = multiply)
+    for numb in range(number):
+        pmaName,zeroGroup = createIKCtrl(ctrlGrp,name = name,num = numb+1,multiply = multiply)
         #pmaName.input3D[0].input3D.set(pos[num])
-        zeroGroup.t.set(pos[num])
-        pmaName.outputTranslate.connect(ikCtrlCrvShape.controlPoints[num])
+        zeroGroup.setTranslation(pos[numb],worldSpace = 1)
+        zeroGroup.r.set(ro)
+        pmaName.outputTranslate.connect(ikCtrlCrvShape.controlPoints[numb])
     for cv in indices:
         parameter = ikCtrlCrvShape.findParamFromLength(pocLength*cv)
         pocName = createPoc(parameter,ikCtrlCrvShape,'%s_Poc%03d'%(name,cv))
@@ -129,7 +133,7 @@ def createPoc(parameter,shape,name):
 
 
 def createIKCtrl(ctrlGrp,name = 'name', num = 1,multiply = 1):
-    pos = [[-1.0, 0.0, 1.0], [1.0, 0.0, 1.0], [1.0, 0.0, -1.0], [-1.0, 0.0, -1.0], [-1.0, 0.0, 1.0]]
+    pos = [[0.0, 1.0, -1.0], [0.0, 1.0, 1.0], [0.0, -1.0, 1.0], [0.0, -1.0, -1.0], [0.0, 1.0, -1.0]]
     curveSquare = pm.curve(p=pos, d=1, name='{0}{2}{1:03d}'.format(name, num, 'Ctrl'))
     shapes = curveSquare.getShapes()
     
@@ -138,7 +142,9 @@ def createIKCtrl(ctrlGrp,name = 'name', num = 1,multiply = 1):
     	shape.overrideEnabled.set(1)
     	shape.overrideColor.set(17)
     zeroGroup = createTransform(type='transform',name = '%s_Grp'%(curveSquare),p=ctrlGrp)
+    #zeroGroup.r.set(ro)
     zeroGroup.addChild(curveSquare)
+    curveSquare.t.set(0,0,0)
     dpmName = createTransform(type='decomposeMatrix',name='{0}{2}{1:03d}'.format(name, num, 'DPM'))
     curveSquare.worldMatrix[0].connect(dpmName.inputMatrix,f = 1)
     return dpmName,zeroGroup
@@ -147,8 +153,8 @@ def createIKCtrl(ctrlGrp,name = 'name', num = 1,multiply = 1):
 def snapToObject(object,transform):
     tr = object.getTranslation(space = 'world')
     ro = object.getRotation(space = 'world')
-    transform.t.set(tr)
-    transform.r.set(ro)
+    transform.setTranslation(tr,worldSpace = 1)
+    transform.setRotation(ro,worldSpace = 1)
 
 def createCondition(shape,name):
     curveInfoName = createTransform(type = 'curveInfo',name = '%s_CI'%(name))
@@ -199,7 +205,7 @@ def connectAttributes(source,target,sourceAttrList,targetAttrList):
 	
 	
 name = 'Test'   
-number = 4
+number = 3
 joints = pm.ls(sl=1)
 jntNumber = len(joints)
 if pm.objExists("Main"):
@@ -214,7 +220,7 @@ ctrlGrp = createTransform(type='transform',name = '%s_CtrlRoot_Grp'%(name),p = s
 ikConnectGrp = createTransform(type='transform',name = '%s_IK_conGrp'%(name),p = ctrlGrp)
 twistGroup = createTransform(type='transform',name = '%s_TwistGroup'%(name),p=ikConnectGrp)
 constraintSysterm = createTransform(type='transform',name = '%s_ConstraintSysterm'%(name),p = splineRootCtrl)
-pm.makeIdentity(rigRoot,apply = 1,t=1,r=1,s=1)
+#pm.makeIdentity(rigRoot,apply = 1,t=1,r=1,s=1)
 #snapToObject(joints[0],rigRoot)
 positions = getPositions(joints)
 solCurve,ikCtrlCurve = createIKSplinecurve(ctrlGrp,positions,number,name = name)
@@ -227,7 +233,7 @@ parentGrp = None
 ikParent = None
 for number in range(jntNumber):
     parameter = solCurve[1].findParamFromLength(length*number)
-    connectGroup,curveCube,sclGroup = createcurveCube(name = '%s_FK'%(name), num = number+1,multiply = multiply)
+    connectGroup,curveCube,sclGroup = createcurveCube(name = '%s_FK'%(name), num = number+1,multiply = multiply*0.7)
     consIKGrp = createTransform(type='transform',name = 'IK_ConTr%03d'%(number+1),p = joints[number])    
     joints[number].addChild(connectGroup)
     connectGroup.t.set(0,0,0)
