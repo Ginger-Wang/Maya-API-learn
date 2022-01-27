@@ -7,7 +7,7 @@ from maya import cmds,standalone,mel
 #standalone.initialize()
 
 file_Path, fileName = os.path.split(__file__)
-# path = '//Cnshasgamefsv1/MGS3/Users/WangJinge/Scripts/test'
+
 uiName = "AutoRetargetTool.ui"
 uiPath = os.path.join(file_Path, uiName)
 
