@@ -24,7 +24,7 @@ class ExportFiles(QtWidgets.QMainWindow):
         uiName.pushButton.clicked.connect(self.getAllMayaFiles)
         uiName.export_pushButton.clicked.connect(self.runExport)
         uiName.loadFile_pushButton.clicked.connect(self.getSourceFile)
-
+    #获取FBX文件夹中的所有FBX文件
     def getAllMayaFiles(self):
         fileDialog = QtWidgets.QFileDialog(self.ui)
         pathName = fileDialog.getExistingDirectory(self.ui,"Export Files")
@@ -32,6 +32,7 @@ class ExportFiles(QtWidgets.QMainWindow):
         mayaFiles = [i for i in os.listdir(pathName) if os.path.splitext(i)[-1] == ".fbx"]
         self.ui.listWidget.clear()
         self.ui.listWidget.addItems(mayaFiles)
+    #获取一个Maya文件，之后重定向的文件都会读取这个文件
     def getSourceFile(self):
         fileDialog = QtWidgets.QFileDialog(self.ui)
         pathName = fileDialog.getOpenFileName(
@@ -56,7 +57,7 @@ class ExportFiles(QtWidgets.QMainWindow):
     def getParent(self,node):
         parentName = cmds.listRelatives(node,p = 1)[0]
         return parentName
-
+    #将动画关键帧烘焙到FK控制器上
     def bakeAnim(self):
         allFKCtrlShapes = pm.ls("FK*",type = "nurbsCurve")
         if cmds.objExists("RootX_M"):
@@ -74,7 +75,7 @@ class ExportFiles(QtWidgets.QMainWindow):
             #print ctrl,rotation
         rootxName.setTranslation(tr)
         pm.setKeyframe(rootxName,at = "translate")
-        
+    #另存一个重定向的Maya文件，和导出一个重定向的FBX文件
     def runExport(self):        
         standalone.initialize()
         cmds.loadPlugin("fbxmaya.mll")
