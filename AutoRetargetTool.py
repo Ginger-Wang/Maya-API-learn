@@ -43,7 +43,7 @@ class ExportFiles(QtWidgets.QMainWindow):
 
     def setRetarget(self):
         mel.eval('hikSetCharacterInput("Mocap","Character1");')
-
+    #设置HumanIK Source : None
     def disconnectRetarget(self):
         mel.eval('hikSetInactiveStanceInput("Mocap");')
         if cmds.objExists("Root_MoCap_M"):
