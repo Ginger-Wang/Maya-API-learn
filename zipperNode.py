@@ -5,7 +5,7 @@ om = OpenMaya
 omm = OpenMayaMPx
 
 class CreateZipperNode(omm.MPxNode):
-    kNodeName = "newZipperNode"
+    kNodeName = "zipperNode"
     kTypeID = om.MTypeId(0x01021)
     zip = om.MObject()
     zipType = om.MObject()
@@ -179,3 +179,32 @@ def uninitializePlugin(obj):
     except:
         sys.stderr.write("Failed to deregister node : %s" % thisNode.kNodeName)
  
+
+
+
+
+
+"""
+# -*- coding: UTF-8 -*-
+import pymel.core as pm
+
+curveName = pm.ls(sl=1)
+outCurve = curveName[0]
+
+inputTargetCurve = curveName[1]
+
+outCurveShape = outCurve.getShape()
+
+inputTargetCurveShape = inputTargetCurve.getShape()
+
+inputCurve = outCurve.duplicate()[0]
+inputCurveShape = inputCurve.getShape()
+
+zipNode = pm.createNode("zipperNode")
+inputCurveShape.ws[0]>>zipNode.input
+inputTargetCurveShape.ws[0]>>zipNode.inputTarget
+
+zipNode.outc >> outCurveShape.create
+
+
+"""
