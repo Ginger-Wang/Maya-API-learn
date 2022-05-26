@@ -15,56 +15,6 @@ class ReimportSourceFiles(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(ReimportSourceFiles, self).__init__(parent)
         self.setupUI()
-
-    def setupUI(self):
-        loader = QtUiTools.QUiLoader()
-        self.ui = loader.load(uiPath)
-        uiName = self.ui
-        uiName.loadFile_pushButton.clicked.connect(self.getAllFBXFiles)
-        uiName.getAssets_pushButton.clicked.connect(self.getAnimationAssets)
-        uiName.pushButton_apply.clicked.connect(self.reimportSourceFiles)
-
-    def getAllFBXFiles(self):
-        fileDialog = QtWidgets.QFileDialog(self.ui)
-        pathName = fileDialog.getExistingDirectory(self.ui, "Export Files")
-        self.ui.fbxFile_lineEdit.setText(pathName)
-        fbxFiles = [i for i in os.listdir(pathName) if os.path.splitext(i)[-1] == ".fbx"]
-        self.ui.listWidget_FBX.clear()
-        self.ui.listWidget_FBX.addItems(fbxFiles)
-
-    def getAnimationAssets(self):
-        #directory = unreal.Paths.get_path(self.ui.assets_lineEdit.text())
-        assets = unreal.EditorAssetLibrary.list_assets(self.ui.assets_lineEdit.text())
-        print(self.ui.assets_lineEdit.text())
-        newAssets = [unreal.EditorAssetLibrary.load_asset(asset) for asset in assets]
-        addAssets = [i.get_full_name() for i in newAssets if i.get_class().get_fname() =="AnimSequence"]
-        self.ui.listWidget_Asset.clear()
-        self.ui.listWidget_Asset.addItems(addAssets)
-    def reimportSourceFiles(self):
-
-        items = self.ui.listWidget_Asset.selectedItems()
-        #批量导入FBX，如果FBX文件名称和资产名称一样，替换现有的资产
-        fbxItems = self.ui.listWidget_FBX.selectedItems()
-        fbx_path = self.ui.fbxFile_lineEdit.text()
-        tasks = []
-        for fbx in fbxItems:
-            fbxName = fbx.text()
-            name,suffix = os.path.splitext(fbxName)
-            for item in items:
-                fullPath = item.text()
-                assetPath,assetName = os.path.split(fullPath)
-                asset,suffix = os.path.splitext(assetName)
-                if asset == name:
-                    makeAsset = unreal.EditorAssetLibrary.load_asset(fullPath)
-                    skeletonName = makeAsset.get_editor_property('skeleton')
-                    task = self.buildImportTask(filename="%s/%s"%(fbx_path,fbxName),destination_path=assetPath,skeleton=skeletonName)
-                    tasks.append(task)
-                    print("%s/%s"%(fbx_path,fbxName))
-                    #print(item.text())
-            #print(tasks)
-        toolsname = unreal.AssetToolsHelpers.get_asset_tools()
-        toolsname.import_asset_tasks(tasks)
-
     def buildImportTask(self,filename='', destination_path='', skeleton=None):
         #设置UE导入FBX,
         options = unreal.FbxImportUI()
@@ -91,6 +41,64 @@ class ReimportSourceFiles(QtWidgets.QWidget):
         task.options = options
         return task
 
+    def setupUI(self):
+        loader = QtUiTools.QUiLoader()
+        self.ui = loader.load(uiPath)
+        uiName = self.ui
+        uiName.loadFile_pushButton.clicked.connect(self.getAllFBXFiles)
+        uiName.getAssets_pushButton.clicked.connect(self.getAnimationAssets)
+        uiName.pushButton_apply.clicked.connect(self.reimportSourceFiles)
+
+    def getAllFBXFiles(self):
+        fileDialog = QtWidgets.QFileDialog(self.ui)
+        file_path = fileDialog.getExistingDirectory(self.ui, "Export Files")
+        self.ui.fbxFile_lineEdit.setText(file_path)
+        fbxFiles = []
+        for root, dirs, files in os.walk(file_path, followlinks=True):
+            # print(root,dirs)
+            for name in files:
+                file_name = os.path.join(root, name)
+                if os.path.splitext(file_name)[-1] == ".fbx":
+                    fbxFiles.append(file_name.replace("\\", "/"))
+        #fbxFiles = [i for i in os.listdir(pathName) if os.path.splitext(i)[-1] == ".fbx"]
+        self.ui.listWidget_FBX.clear()
+        self.ui.listWidget_FBX.addItems(fbxFiles)
+
+    def getAnimationAssets(self):
+        #directory = unreal.Paths.get_path(self.ui.assets_lineEdit.text())
+        assets = unreal.EditorAssetLibrary.list_assets(self.ui.assets_lineEdit.text())
+        print(self.ui.assets_lineEdit.text())
+        newAssets = [unreal.EditorAssetLibrary.load_asset(asset) for asset in assets]
+        addAssets = [i.get_full_name().replace("AnimSequence ","") for i in newAssets if i.get_class().get_fname() =="AnimSequence"]
+        self.ui.listWidget_Asset.clear()
+        self.ui.listWidget_Asset.addItems(addAssets)
+    def reimportSourceFiles(self):
+        items = self.ui.listWidget_Asset.selectedItems()
+        #批量导入FBX，如果FBX文件名称和资产名称一样，替换现有的资产
+        fbxItems = self.ui.listWidget_FBX.selectedItems()
+        fbx_path = self.ui.fbxFile_lineEdit.text()
+        tasks = []
+        for fbx in fbxItems:
+            fbxPathName = fbx.text()
+            fbxPath,fbxName = os.path.split(fbxPathName)
+            name,suffix = os.path.splitext(fbxName)
+            for item in items:
+                fullPath = item.text()
+                assetPath,assetName = os.path.split(fullPath)
+                asset,suffix = os.path.splitext(assetName)
+                if asset == name:
+                    makeAsset = unreal.EditorAssetLibrary.load_asset(fullPath)
+                    skeletonName = makeAsset.get_editor_property('skeleton')
+                    task = self.buildImportTask(filename=fbxPathName,destination_path=assetPath,skeleton=skeletonName)
+                    tasks.append(task)
+                    print("%s/%s"%(fbx_path,fbxName))
+                    #print(item.text())
+            #print(tasks)
+        toolsname = unreal.AssetToolsHelpers.get_asset_tools()
+        toolsname.import_asset_tasks(tasks)
+
+
+
 #unreal.Paths.get_path("/Game/ZVMinus1Anims/AnimSequences")
 
 if __name__ == "__main__":
@@ -99,12 +107,7 @@ if __name__ == "__main__":
     mainwindow.ui.show()
     unreal.parent_external_window_to_slate(mainwindow.ui.winId())
 
-'''
 
-@echo off
-cmd /k mayapy D:\MayaPycharm\MyMayaStandaLoneTest.py
-
-'''
 
 """
 ###   UI
