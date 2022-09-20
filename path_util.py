@@ -1,6 +1,6 @@
 import os
 
-UE_PROJECT_ROOT = "../../../Cobra"
+UE_PROJECT_ROOT = "../../../test"
 UE_CONTENT_PYTHON = "content/python/"
 UE_TOOL_PYTHON = "tools/python/unrealscripts/"
 
