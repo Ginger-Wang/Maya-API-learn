@@ -18,14 +18,14 @@ class TestSearch(QtWidgets.QWidget):
         self.setupUI()
     def setupUI(self):
         loader = QtUiTools.QUiLoader()
-        self.ui = loader.load(uiPath)
+        self.ui = loader.load(uiPath,parentWidget=self)
         self.ui.setWindowFlags(QtCore.Qt.Window)
         self.addIteams()
         self.addText()
         self.ui.pushButton_addIteams.clicked.connect(self.addIteamsList)
         self.ui.lineEdit.textChanged.connect(self.addIteams)
-        self.ui.pushButton_toDo.clicked.connect(self.dolistWidget)
-        self.ui.pushButton_A.clicked.connect(self.dolistWidget_A)
+        self.ui.pushButton_toDo.clicked.connect(lambda:self.showsearchIteams(self.ui.listWidget))
+        self.ui.pushButton_A.clicked.connect(lambda:self.showsearchIteams(self.ui.listWidget_A))
     def addIteams(self):
         """搜索关键字，匹配到的关键字的项目显示在列表中，没有输入关键字显示所有的列表"""
         self.ui.listWidget_A.clear()
@@ -39,10 +39,7 @@ class TestSearch(QtWidgets.QWidget):
         listIteams = listWidget.selectedItems()
         for iteam in listIteams:
             print(iteam.text())
-    def dolistWidget(self):
-        self.showsearchIteams(self.ui.listWidget)
-    def dolistWidget_A(self):
-        self.showsearchIteams(self.ui.listWidget_A)
+
     def addIteamsList(self):
         """文本中存在的名称，添加到列表中"""
         textContent = self.ui.textEdit.toPlainText()
@@ -50,7 +47,7 @@ class TestSearch(QtWidgets.QWidget):
         newIteams = [i for i in listIteams if i in iteams]
         self.ui.listWidget.clear()
         self.ui.listWidget.addItems(newIteams)
-
+        
     def addText(self):
         self.ui.textEdit.setText("""teststr\nteststr1\nteststr2\nteststr3\nteststr4\nteststr5\nteststr6\nteststr7\n""")
 if __name__ == "__main__":
