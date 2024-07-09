@@ -2,37 +2,68 @@
 #!/usr/bin/python
 import os,sys
 from maya.api import OpenMaya,OpenMayaAnim
+from maya import cmds
+
 import pymel.core as pm
 
-def setSkinWeight(vertex_DP,influenceList,mWeightList):
-    skinName2.setWeights(vertex_DP,influenceList,mWeightList)
+###Convert node to OpenMaya.MObject object
+def get_object(node):
+    selection = OpenMaya.MSelectionList()
+    selection.add(node)
+    return selection.getDependNode(0)
+###Convert node to OpenMaya.MDagPath object
+def get_DagPath(node):
+    selection = OpenMaya.MSelectionList()
+    selection.add(node)
+    return selection.getDagPath(0)
 
-meshName = pm.PyNode("pPlaneShape1")
-skinName = pm.PyNode("skinCluster1")
+### Add bonesList to mDagPathArray (OpenMaya.MDagPathArray )
+def set_JointsDPArray(mDagPathArray,bonesList):
+    for bone in bonesList:
+        boneDP = get_DagPath(bone)
+        mDagPathArray.append(boneDP)
 
-influences = skinName.influenceObjects()
+###Convert mesh to OpenMaya.MDagPath,OpenMaya.MObject object
+def meshSpape2Vertex(meshName):
+    vertex_list = OpenMaya.MSelectionList()
+    vertex_list.add('%s.vtx[*]'%meshName)
+    vertex_dag_path, vertex_object = vertex_list.getComponent(0)
+    return vertex_dag_path, vertex_object
+
+   
+
+
+
+mobject = OpenMaya.MObject()    
+skinMObject = get_object("skinCluster1")
+vertex_dag_path, vertex_object = meshSpape2Vertex("pPlaneShape1")
+apiSkinCluster = OpenMayaAnim.MFnSkinCluster(skinMObject)
+#获取蒙皮权重
+weightsComplete,influences = apiSkinCluster.getWeights(apiShapeDP,mobject)
+#获取蒙皮骨骼列表 MDagPathArray
+influenceObjects = apiSkinCluster.influenceObjects()
+# influenceObjects joint1 joint2 joint3;
+
+cmds.delete("skinCluster1")
+bonesList =['joint4' ,'joint5', 'joint6']
+#创建新的skin cluster 使用bone list的骨骼
+skinNewName = cmds.skinCluster(bonesList,"pPlaneShape1",tsb=1)[0]
+skinNewMObject = get_object(skinNewName)
+apiSkinNewCluster = OpenMayaAnim.MFnSkinCluster(skinNewMObject)
+mDagPathArray = OpenMaya.MDagPathArray()
+set_JointsDPArray(mDagPathArray,bonesList)
 influenceList = OpenMaya.MIntArray()
-mWeightList = OpenMaya.MDoubleArray()
-moldWeightList = OpenMaya.MDoubleArray()
-for name in influences:
-    currentIndex = skinName.indexForInfluenceObject(name)
-    print currentIndex
+for eachInfluenceObject in mDagPathArray:
+    currentIndex = apiSkinNewCluster.indexForInfluenceObject(eachInfluenceObject)
     influenceList.append(currentIndex)
-weights = skinName.getWeights(meshName)
 
-for w in weights:
-    [mWeightList.append(i) for i in w]
+apiSkinNewCluster.setWeights(vertex_dag_path,vertex_object,influenceList,weightsComplete)
+    
+    
 
-meshName2 = pm.PyNode("%s.vtx[*]"%"pPlaneShape2")
-skinName2 = pm.skinCluster(influences,meshName2,tsb = 1)
 
-vertex_DP = meshName2.__apimdagpath__()
-oldWeights = skinName2.getWeights(meshName2)
 
-for weight in mWeightList:
-    moldWeightList.append(weight)
 
-setSkinWeight(vertex_DP,influenceList,moldWeightList)
 
 
 """
