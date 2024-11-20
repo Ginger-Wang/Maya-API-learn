@@ -1,4 +1,4 @@
-from maya import cmds,OpenMaya
+from maya  import cmds,mel,OpenMaya
 
 def get_offset_to_closest_point(mesh_name, position,space = OpenMaya.MSpace.kWorld):
     # 创建选择列表并添加多边形网格对象
@@ -104,29 +104,28 @@ def runScript(**kwargs):
     tatgetMesh = "head_lod0_mesh1"
     rootJoint = "spine_04" 
     """
+    
     dicNames = {}
     children = getChildJoint(kwargs["rootJoint"],dicNames)
     newJointDic = {k:v for k,v in dicNames.items() if v}
     parentJoints = [k for k,v in newJointDic.items()]
     #cmds.select(parentJoints)
     
-    allJoints = cmds.listRelatives(rootJoint,c = 1,ad = 1,type = "joint")
-    allJoints.append(rootJoint)
+    allJoints = cmds.listRelatives(kwargs["rootJoint"],c = 1,ad = 1,type = "joint")
+    allJoints.append(kwargs["rootJoint"])
     for jnt in allJoints:
-        transferJoints(kwargs["sourceMesh"],kwargs["tatgetMesh"],jnt,prefix = "new")
+        transferJoints(kwargs["sourceMesh"],kwargs["tatgetMesh"],jnt,prefix = kwargs["prefix"])
         cmds.refresh()
         
     
     for k,v in newJointDic.items():
-        cmds.parent([f"new_{i}" for i in v],f"new_{k}")
-        print(k,v)
-            
+        cmds.parent([f"{kwargs['prefix']}_{i}" for i in v],f"{kwargs['prefix']}_{k}")
+
 
 if __name__ == "__main__":
-    runScript(sourceMesh = "head_lod0_mesh",tatgetMesh = "head_lod0_mesh1" ,rootJoint = "spine_04")
-
-
-
+    runScript(sourceMesh = "head_lod0_mesh",tatgetMesh = "head_lod0_mesh1" ,rootJoint = "spine_04",prefix = "MetaHuamnNew")
+    mel.eval("print('Transfer joints completed....');")
+    
 
 
 
