@@ -6,14 +6,208 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>864</width>
-    <height>788</height>
+    <width>744</width>
+    <height>665</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MetaHumanPicker 1.0</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="asset_verticalLayout">
+     <item>
+      <widget class="Line" name="line_8">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="assetPath_horizontalLayout" stretch="2,1">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QLineEdit" name="sequence_path_lineEdit">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="load_sequencer_pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>60</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton{
+background-color: rgba(165, 200, 198, 155);
+border-style: outset;
+border-width: 0px;
+border-radius: 8px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+         </property>
+         <property name="text">
+          <string>&lt;&lt;&lt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,6">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_40">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Actor Name : </string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_Actors">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="selecte_horizontalLayout" stretch="1,5">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QRadioButton" name="single_radioButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton{
+border-width: 2px; 
+border-color: rgba(255, 255, 255, 25);
+}
+ QRadioButton:!hover { 
+	color:rgba(153, 96, 96, 200);
+}
+ QRadioButton:hover{ color: red }
+ QRadioButton:!hover:checked { 
+	color:rgba(255, 0, 0, 200);
+}</string>
+         </property>
+         <property name="text">
+          <string>Single Selection</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clear_pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton{
+background-color: rgba(165, 200, 198, 155);
+border-style: outset;
+border-width: 0px;
+border-radius: 8px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+         </property>
+         <property name="text">
+          <string>Clear All Seletion</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_15">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="font">
@@ -23,13 +217,31 @@
        <bold>true</bold>
       </font>
      </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="body_tab">
       <attribute name="title">
        <string>BODY</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_83">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_42">
+         <property name="toolTip">
+          <string>未完待续~~~</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="faceCtrl_tab">
       <attribute name="title">
@@ -74,7 +286,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>819</width>
+            <width>699</width>
             <height>295</height>
            </rect>
           </property>
@@ -1600,7 +1812,7 @@ border-style: inset; }
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>819</width>
+            <width>742</width>
             <height>651</height>
            </rect>
           </property>
@@ -8614,201 +8826,56 @@ border-style: inset; }
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <layout class="QVBoxLayout" name="asset_verticalLayout">
-     <item>
-      <widget class="Line" name="line_8">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+     <widget class="QWidget" name="aboutme_tab">
+      <attribute name="title">
+       <string>About Tool</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_82">
+       <property name="leftMargin">
+        <number>0</number>
        </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="assetPath_horizontalLayout" stretch="2,1">
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <property name="spacing">
-        <number>2</number>
+        <number>0</number>
        </property>
-       <item>
-        <widget class="QLineEdit" name="sequence_path_lineEdit">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_41">
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>30</height>
+           <height>35</height>
           </size>
          </property>
          <property name="font">
           <font>
-           <pointsize>12</pointsize>
            <weight>75</weight>
            <bold>true</bold>
           </font>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="load_sequencer_pushButton">
-         <property name="minimumSize">
-          <size>
-           <width>60</width>
-           <height>30</height>
-          </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">QPushButton{
-background-color: rgba(165, 200, 198, 155);
-border-style: outset;
-border-width: 0px;
-border-radius: 8px;
-border-color: red;
-}
-QPushButton:hover{
-background-color:rgba(0,0,200,60); 
-color: black;}
-QPushButton:checked{
-background-color: rgba(0,255, 0 ,200);
-border-style: inset; }
-
-</string>
+          <string notr="true">background-color:rgb(134, 110, 255);
+color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
-          <string>&lt;&lt;&lt;</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,6">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label_40">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Actor Name : </string>
+          <string>Please contact me if you have any questions!
+QQ&amp;&amp;WeChat: 370871841</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="comboBox_Actors">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="selecte_horizontalLayout" stretch="1,5">
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <item>
-        <widget class="QRadioButton" name="single_radioButton">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QRadioButton{
-border-width: 2px; 
-border-color: rgba(255, 255, 255, 25);
-}
- QRadioButton:!hover { 
-	color:rgba(153, 96, 96, 200);
-}
- QRadioButton:hover{ color: red }
- QRadioButton:!hover:checked { 
-	color:rgba(255, 0, 0, 200);
-}</string>
-         </property>
-         <property name="text">
-          <string>Single Selection</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="clear_pushButton">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton{
-background-color: rgba(165, 200, 198, 155);
-border-style: outset;
-border-width: 0px;
-border-radius: 8px;
-border-color: red;
-}
-QPushButton:hover{
-background-color:rgba(0,0,200,60); 
-color: black;}
-QPushButton:checked{
-background-color: rgba(0,255, 0 ,200);
-border-style: inset; }
-
-</string>
-         </property>
-         <property name="text">
-          <string>Clear All Seletion</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="Line" name="line_15">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>
