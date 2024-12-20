@@ -16,6 +16,7 @@ class MetaHumanPicker(QtWidgets.QWidget):
     def setupUI(self):
         loader = QtUiTools.QUiLoader()
         self.ui = loader.load(uiPath)
+        self.resetMinmumValue()
         self.ui.CTRL_L_brow_down.clicked.connect(self.select_Contrl)
         self.ui.CTRL_L_brow_lateral.clicked.connect(self.select_Contrl)
         self.ui.CTRL_L_brow_raiseIn.clicked.connect(self.select_Contrl)
@@ -199,6 +200,8 @@ class MetaHumanPicker(QtWidgets.QWidget):
         self.ui.load_sequencer_pushButton.clicked.connect(self.get_sequencer)
         self.ui.sequence_path_lineEdit.textChanged.connect(self.editItems)
         self.ui.tabWidget.currentChanged.connect(self.resetMinmumValue)
+        self.ui.comboBox_Actors.currentTextChanged.connect(self.set_UI)
+
     def editItems(self):
         """将获取到关卡序列中的所有Actors，添加到comboBox中"""
         #self.ui.sequence_path_lineEdit.textChanged()
@@ -221,7 +224,21 @@ class MetaHumanPicker(QtWidgets.QWidget):
                 hosting_actors_fullName.append(returnName)
                 control_rigs_dic[returnName] = control
             return hosting_actors_fullName,control_rigs_dic
-    
+
+    def set_UI(self):
+        """
+        通过comboBox 中Actor切换，查找UI显示对应的 tabUI
+        """
+        actor_name = self.ui.comboBox_Actors.currentText()
+        actorName = actor_name.split("(")[0]
+        if actorName == "MetaHuman_ControlRig":
+            tabName = self.ui.findChild(QtWidgets.QWidget, 'body_tab')            
+            #self.ui.tabWidget.setCurrentIndex(0)
+        elif actorName == "Face_ControlBoard_CtrlRig":
+            tabName = self.ui.findChild(QtWidgets.QWidget, 'faceCtrl_tab')
+            #self.ui.tabWidget.setCurrentIndex(1)
+        self.ui.tabWidget.setCurrentWidget(tabName)
+
     def select_Contrl(self):
         sender = self.sender()
         button_name = sender.objectName()
@@ -236,6 +253,7 @@ class MetaHumanPicker(QtWidgets.QWidget):
             control_rigs = [i for i in control_rigs_dic.values() if i != control_name]
             self.clear_control_selection(control_rigs)
             control_name.control_rig.select_control(button_name,select = True)
+
     def clear_select(self):
         hosting_actors_fullName,control_rigs_dic = self.get_control_rigs()
         self.clear_control_selection(control_rigs_dic.values())
@@ -272,7 +290,11 @@ class MetaHumanPicker(QtWidgets.QWidget):
             self.ui.setMinimumWidth(600)
             self.ui.setMinimumHeight(300)
             self.ui.resize(QtCore.QSize(600, 300))
-
+        elif tabName == "aboutme_tab":
+            self.ui.setMinimumWidth(600)
+            self.ui.setMinimumHeight(220)
+            self.ui.resize(QtCore.QSize(600, 220))
+        
 
 
 
