@@ -11,12 +11,20 @@ uiName = "MetaHumanPicker.ui"
 uiPath = os.path.join(file_Path, uiName)
 class MetaHumanPicker(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(MetaHumanPicker, self).__init__(parent)
+        super(MetaHumanPicker, self).__init__(parent)        
         self.setupUI()
+
     def setupUI(self):
         loader = QtUiTools.QUiLoader()
         self.ui = loader.load(uiPath)
+        self.ui.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.resetMinmumValue()
+        
+        self.ui.clear_pushButton.clicked.connect(self.clear_select)
+        self.ui.load_sequencer_pushButton.clicked.connect(self.get_sequencer)
+        self.ui.sequence_path_lineEdit.textChanged.connect(self.editItems)
+        self.ui.tabWidget.currentChanged.connect(self.resetMinmumValue)
+
         self.ui.CTRL_L_brow_down.clicked.connect(self.select_Contrl)
         self.ui.CTRL_L_brow_lateral.clicked.connect(self.select_Contrl)
         self.ui.CTRL_L_brow_raiseIn.clicked.connect(self.select_Contrl)
@@ -196,29 +204,27 @@ class MetaHumanPicker(QtWidgets.QWidget):
         self.ui.CTRL_L_eye_faceScrunch.clicked.connect(self.select_Contrl)
         self.ui.CTRL_faceGUIfollowHead.clicked.connect(self.select_Contrl)
 
-        self.ui.clear_pushButton.clicked.connect(self.clear_select)
-        self.ui.load_sequencer_pushButton.clicked.connect(self.get_sequencer)
-        self.ui.sequence_path_lineEdit.textChanged.connect(self.editItems)
-        self.ui.tabWidget.currentChanged.connect(self.resetMinmumValue)
-        self.ui.comboBox_Actors.currentTextChanged.connect(self.set_UI)
-
     def editItems(self):
         """将获取到关卡序列中的所有Actors，添加到comboBox中"""
         #self.ui.sequence_path_lineEdit.textChanged()
         hosting_actors_fullName,control_rigs_dic = self.get_control_rigs()
         self.ui.comboBox_Actors.clear()
         self.ui.comboBox_Actors.addItems(hosting_actors_fullName)
+        
 
     def get_control_rigs(self):
         control_rigs_dic = {}
         hosting_actors_fullName = []
         sequence_asset = unreal.load_asset(self.ui.sequence_path_lineEdit.text())
-        if sequence_asset:
+        if sequence_asset or sequence_asset != "None":
             #获取序列中的所有 Control Rigs
             control_rigs = unreal.ControlRigSequencerLibrary.get_control_rigs(sequence_asset)
             for control in control_rigs:
-                hosting_actor = control.control_rig.get_hosting_actor()
-                actorName = hosting_actor.get_name()
+                # 获取父级 Actor
+                proxyName = control.get_editor_property("proxy")
+                parent_actor = proxyName.get_parent()
+                actorName = parent_actor.get_name()
+                # 获取control rig 名称
                 control_name = control.control_rig.get_name()
                 returnName = f"{control_name}({actorName})"
                 hosting_actors_fullName.append(returnName)
@@ -230,14 +236,12 @@ class MetaHumanPicker(QtWidgets.QWidget):
         通过comboBox 中Actor切换，查找UI显示对应的 tabUI
         """
         actor_name = self.ui.comboBox_Actors.currentText()
+        # if actor_name:
         actorName = actor_name.split("(")[0]
         if actorName == "MetaHuman_ControlRig":
-            tabName = self.ui.findChild(QtWidgets.QWidget, 'body_tab')            
-            #self.ui.tabWidget.setCurrentIndex(0)
+            tabName = self.ui.findChild(QtWidgets.QWidget, 'body_tab')
         elif actorName == "Face_ControlBoard_CtrlRig":
             tabName = self.ui.findChild(QtWidgets.QWidget, 'faceCtrl_tab')
-            #self.ui.tabWidget.setCurrentIndex(1)
-        self.ui.tabWidget.setCurrentWidget(tabName)
 
     def select_Contrl(self):
         sender = self.sender()
@@ -262,13 +266,13 @@ class MetaHumanPicker(QtWidgets.QWidget):
         for _i in controlRigs:
             _i.control_rig.clear_control_selection()
 
-
     def get_sequencer(self):
-        assetsList = unreal.EditorUtilityLibrary.get_selected_assets()
+        assetsList = unreal.LevelSequenceEditorBlueprintLibrary.get_focused_level_sequence()
         if assetsList:
-            sequence_path = assetsList[0].get_path_name()
+            sequence_path = assetsList.get_path_name()
         else:
-            sequence_path = '/Game/MetaHumans/Tahir_Modify/MySequence.MySequence'
+            sequence_path = 'None'
+        self.ui.sequence_path_lineEdit.clear()
         self.ui.sequence_path_lineEdit.setText(sequence_path)
         #return sequence_path
 
@@ -293,13 +297,11 @@ class MetaHumanPicker(QtWidgets.QWidget):
         elif tabName == "aboutme_tab":
             self.ui.setMinimumWidth(600)
             self.ui.setMinimumHeight(220)
-            self.ui.resize(QtCore.QSize(600, 220))
-        
-
-
+            self.ui.resize(QtCore.QSize(600, 220))     
 
 if __name__ == "__main__":
     #app = qt_util.create_qt_application(use_stylesheet=False)
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     mainwindow = MetaHumanPicker()
     mainwindow.ui.show()
     unreal.parent_external_window_to_slate(mainwindow.ui.winId())
