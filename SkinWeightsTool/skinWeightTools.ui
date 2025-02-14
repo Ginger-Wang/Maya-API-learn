@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>620</width>
+    <height>661</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Skin Weight Tools V1.0</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="1" column="0">
+     <widget class="QPushButton" name="pushButton_6">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+      </property>
+      <property name="text">
+       <string>Exit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QToolBox" name="toolBox">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Panel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <property name="tabSpacing">
+       <number>6</number>
+      </property>
+      <widget class="QWidget" name="skinWeighttool_tab">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>600</width>
+         <height>470</height>
+        </rect>
+       </property>
+       <attribute name="label">
+        <string>Skin Weight Tool</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_5">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item row="3" column="0">
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="1" column="0" colspan="2">
+             <widget class="QListWidget" name="listWidget_MeshList">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QPushButton" name="pushButton_LoadMesh">
+              <property name="minimumSize">
+               <size>
+                <width>124</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Add objects with skin clusters from all selected objects to a list.</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+              </property>
+              <property name="text">
+               <string comment="Select Joint By Mesh" extracomment="Select Joint By Mesh"> Load Mesh</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_SaveWeight">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>保存权重到文件夹中，根据Mesh名称命名xml文件
+Save the weights to a folder and name the xml file according to the Mesh name</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+              </property>
+              <property name="text">
+               <string>Save Weights</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QLabel" name="label_Mesh">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Mesh</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QPushButton" name="pushButton_selcteJointByMesh">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+              </property>
+              <property name="text">
+               <string>Select Joint By Mesh</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="1">
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="1" column="0" colspan="2">
+             <widget class="QListWidget" name="listWidget_XMLLIst">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_selcteJointByXML">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+              </property>
+              <property name="text">
+               <string>Select Joint By XML</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_ImportWeight">
+              <property name="minimumSize">
+               <size>
+                <width>254</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>导入选择元素的蒙皮权重
+Import skin weights of selected elements</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+              </property>
+              <property name="text">
+               <string>Import Weights</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QLabel" name="label_SkinWeight">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>XML</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QPushButton" name="pushButton_testFuntion">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>导入选择的mesh的蒙皮权重，如果没有蒙皮，将根据xml文件中的骨骼蒙皮并导入权重
+Import the skin weights of the selected mesh. If it is not skinned, it will be skinned according to the bones in the xml file and the weights will be imported</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+background-color: rgba(112,112,112,190);
+border-style: outset;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+</string>
+          </property>
+          <property name="text">
+           <string>Find and Import Skin Weights</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,5,1">
+          <item>
+           <widget class="QLabel" name="label_SkinWeightPath">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Skin Weight Path:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_Reload">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>刷新文件中的文件
+Refresh the files in the file</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+            </property>
+            <property name="text">
+             <string>Reload</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_FilePath">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="placeholderText">
+             <string>Saved Skin Weights Path</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_LoadPath">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>选择存储 XML 文件的文件夹
+Select the folder where the XML files are stored</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+            </property>
+            <property name="text">
+             <string>&lt;&lt;&lt;</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QPushButton" name="pushButton_ImportSSkinweight">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>依次选择需要导入权重的模型和XML文件，点击此按钮
+Select the model and XML file whose weights need to be imported, and click this button</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+background-color: rgba(112,112, 112,255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+          </property>
+          <property name="text">
+           <string>Import Selected Skin Weights</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="transferSkinWeight_tab">
+       <attribute name="label">
+        <string>Transfer Skin Weight</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,5,1">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Prefix :</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_Prefix">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_LoadPrefix">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>选择有空间名称的物体，将空间名称填在对话框中
+Select the object with the space name and fill in the space name in the dialog box</string>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{
+background-color: rgba(112, 112, 112, 255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+            </property>
+            <property name="text">
+             <string>&lt;&lt;&lt;</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="pushButton_Transferskin">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>传递权重
+Transfer Skin Weight</string>
+          </property>
+          <property name="statusTip">
+           <string/>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+background-color: rgba(112, 112, 112, 255);
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: red;
+}
+QPushButton:hover{
+background-color:rgba(0,0,200,60); 
+color: black;}
+QPushButton:checked{
+background-color: rgba(0,255, 0 ,200);
+border-style: inset; }
+
+</string>
+          </property>
+          <property name="text">
+           <string>Transfer SkinWeight</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="aboutme_tab">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>600</width>
+         <height>470</height>
+        </rect>
+       </property>
+       <attribute name="label">
+        <string>AboutMe</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>35</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color:rgb(134, 110, 255);
+color: rgb(0, 0, 0);</string>
+          </property>
+          <property name="text">
+           <string>Please contact me if you have any questions!
+QQ&amp;&amp;WeChat: 370871841</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>620</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton_6</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>303</x>
+     <y>495</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>462</x>
+     <y>-12</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
