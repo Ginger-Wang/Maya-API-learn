@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form_adjust_Bones</class>
+ <widget class="QWidget" name="Form_adjust_Bones">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>481</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Rigging By MetaHuman Tools</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <layout class="QGridLayout" name="gridLayout_8">
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <property name="horizontalSpacing">
+      <number>3</number>
+     </property>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="pushButton_exportFbxTool">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+       </property>
+       <property name="text">
+        <string>Export FBX Tools</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QPushButton" name="pushButton_skinWeightsTool">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+       </property>
+       <property name="text">
+        <string>Skin Weights Tools</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QToolBox" name="toolBox_RiggingTools">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page_adjust_Bones">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>480</width>
+        <height>297</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <attribute name="label">
+       <string>Adjust Bones</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item row="0" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton_delete_nameSpace">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>删除空间名称（DHIhead）</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Delete Head NameSpace</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" colspan="2">
+        <widget class="QPushButton" name="pushButton_add_nameSpace">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>删除空间名称（DHIhead）</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Add Head NameSpace</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="4">
+        <widget class="QPushButton" name="pushButton_delete_selected_skinCluster">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>删除选择模型的Skin Cluster</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Delete Selected SkinCluster</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="4">
+        <widget class="QPushButton" name="pushButton_delete_constraints">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Delete_Constraints</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="4">
+        <widget class="QPushButton" name="pushButton_createFacialBones">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Create Facial Bones</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="4">
+        <widget class="QPushButton" name="pushButton_snapAlignBody">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Snap Align Body</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>NameSpace :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="2">
+        <widget class="QLineEdit" name="lineEdit_nameSpace">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="3">
+        <widget class="QPushButton" name="pushButton_loadNameSpace">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>&lt;&lt;&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="4">
+        <widget class="QPushButton" name="pushButton_placBones">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Placing Bones</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_MetaHuman">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>480</width>
+        <height>297</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <attribute name="label">
+       <string>MetaHuman</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>MetaHuman Path :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_MetaHumanPath">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>C:/MetaHuman-DNA-Calibration-main</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_LoadMetaHumanPath">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>&lt;&lt;&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>DNA :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_dnaPath">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="pushButton_LoadDNAPath">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>&lt;&lt;&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Character Name :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_characterName">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="pushButton_saveDNA">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Save DNA</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="3">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="3">
+        <widget class="QPushButton" name="pushButton_remove_joints">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+         </property>
+         <property name="text">
+          <string>Remove Joints</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="3">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="3">
+        <widget class="QLabel" name="label_Bones">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Joints</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="3">
+        <widget class="QListWidget" name="listWidget_BonesList">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_AboutMe">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>480</width>
+        <height>297</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>AboutMe</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>35</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color:rgb(134, 110, 255);
+color: rgb(0, 0, 0);</string>
+         </property>
+         <property name="text">
+          <string>Please contact me if you have any questions!
+QQ&amp;&amp;WeChat: 370871841</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="pushButton_exit">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #707070; /* 默认背景颜色 */
+	border-width: 0px;
+	border-radius: 15px;
+}
+
+QPushButton:hover {
+    background-color: rgba(0,0,200,60); /* 鼠标悬停颜色 */
+}
+
+QPushButton:pressed {
+    background-color: rgba(0,0,0,180); /* 鼠标点击颜色 */
+}
+</string>
+     </property>
+     <property name="text">
+      <string>Exit</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton_exit</sender>
+   <signal>clicked()</signal>
+   <receiver>Form_adjust_Bones</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>246</x>
+     <y>334</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>367</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
