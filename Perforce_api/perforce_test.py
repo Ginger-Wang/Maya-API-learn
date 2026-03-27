@@ -1,3 +1,5 @@
+from P4 import P4, P4Exception
+
 def check_file_in_perforce(p4, file_path):
     """
     判断文件是否存在于Perforce服务器，并返回状态
