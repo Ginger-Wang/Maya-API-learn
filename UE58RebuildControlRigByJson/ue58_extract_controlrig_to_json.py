@@ -42,7 +42,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-DEFAULT_SOURCE = r"E:\\CR_SKM_WaterUP.txt"
+DEFAULT_SOURCE = r"E:\\to-json.txt"
 DEFAULT_OUTPUT = r"E:\\CR_SKM_WaterUP_controlrig_rebuild_data.json"
 # JSON Schema 版本。后续修改输出字段时应同步提升此版本号。
 SCHEMA_VERSION = "1.0"
