@@ -1,0 +1,1 @@
+This project is a Python port of the excellent C++ library (https://github.com/azagoruyko/colliders/tree/main) developed by [Alexander Zagoruyko]. We heavily reuse their logic and algorithms under the terms of the Apache License 2.0.
