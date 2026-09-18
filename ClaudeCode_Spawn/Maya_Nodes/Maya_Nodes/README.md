@@ -1,6 +1,7 @@
 # MayaNodes
 
 Maya 自定义节点（Python API 1.0，`maya.OpenMaya` / `maya.OpenMayaMPx`）。
+后期根据实际节点作用，修改 def compute() 内容，和 def nodeInitializer() 里的属性 
 
 本文档说明其中两个文件：
 
