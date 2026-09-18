@@ -21,7 +21,7 @@ Maya 自定义节点（Python API 1.0，`maya.OpenMaya` / `maya.OpenMayaMPx`）�
 
    ```python
    import os, sys
-   path = r"H:\DBackUp\EFBack\F\VS-Code_Project\ClaudeCode_Spawn\MayaNodes"
+   path = r"H:\ScriptPath\MayaNodes"
    sys.path.append(path)                                    # 让 add_Attribute 可被 import
    os.environ["MAYA_PLUG_IN_PATH"] += os.pathsep + path     # 让插件管理器能找到
    ```
