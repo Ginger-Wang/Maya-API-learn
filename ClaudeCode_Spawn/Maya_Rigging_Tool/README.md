@@ -50,6 +50,8 @@ variableFK.show()
 
 - **position** —— 控制器沿链条滑动的量，单位是骨骼序号。
   **出厂值永远是干净的 0**，正负表示往根部或末端滑。
+  控制器始终贴在它对应的那根骨骼上：链条被别的控制器掰弯时，
+  自己没动过的控制器也会跟着链条走，不会留在原地。
 - **basePosition** —— 控制器出厂时待的位置（同样以骨骼序号为单位）。
   它是"设置"而不是"动画"：可以在通道盒里改，但不可 K 帧。
   实际位置 = `basePosition + position`，再钳回 `[0, 骨骼数-1]`，
@@ -85,6 +87,21 @@ variableFK.show()
 `jointVis` / `controlVis` 两个显示开关。
 
 绑定骨骼都收进了 `<前缀>bind_joints_set` 集合，要蒙皮别的模型直接选这个集合即可。
+
+### 控制器怎么跟着链条走
+
+控制器骑在一条 `<前缀>ride_crv` 上（隐藏）。这条曲线的每个 CV 100% 绑给
+对应骨骼，所以它跟着骨骼一起变形，控制器也就跟着走了。
+
+这里**不会**形成循环依赖：控制器的 `rotate` / `scale` 是输入属性，
+它驱动骨骼、骨骼驱动这条曲线、曲线再摆放控制器的父组，
+而 `rotate` 本身不依赖父组的变换。自检里有 `cycleCheck` 断言。
+
+轨道曲线刻意用**线性**（degree 1）。二次/三次是"逼近" CV 而不是穿过它，
+链条一弯曲线就往内侧塌、弧长也变短，控制器于是落不到自己那根骨骼上 ——
+实测 40 骨骼弯 60°，三次偏 0.31、二次偏 0.20、线性 0.00。
+代价是 `motionPath` 的朝向在每个 CV 处有一点阶梯感，但骨骼够密时每段转角很小，
+而位置准确得多。
 
 ### 蒙皮面片
 
@@ -147,18 +164,20 @@ joint[j].scaleYZ = 1 + Σ (control.scaleYZ - 1) * w
 <前缀>rig_grp
 └── <前缀>global_ctrl              整体移动 / 旋转 / 缩放
     ├── <前缀>curve_grp
-    │   └── <前缀>base_crv         隐藏的副本；用户原曲线不会被改动
+    │   └── <前缀>base_crv         隐藏的副本；只用来铺骨骼，原曲线不会被改动
     ├── <前缀>joint_grp
     │   └── <前缀>bind_000_jnt …   骨骼链
     └── <前缀>control_grp          inheritsTransform = 0
-        └── <前缀>fk_01_path_grp   由基础曲线上的 motionPath 驱动
+        └── <前缀>fk_01_path_grp   由 ride_crv 上的 motionPath 驱动
             └── <前缀>fk_01_offset_grp
                 └── <前缀>fk_01_ctrl
 └── <前缀>geo_grp                  inheritsTransform = 0
+    ├── <前缀>ride_crv             蒙皮到骨骼上的控制器轨道（隐藏）
     └── <前缀>ribbon_geo           蒙皮到骨骼链上的面片
 ```
 
 注意 `geo_grp` 挂在 `rig_grp` 下、而**不是**总控下 —— 理由同上：避免双重变换。
+`ride_crv` 和面片都被骨骼驱动，所以都放在这一层。
 
 `control_grp` 关掉了 `inheritsTransform`，因为 motionPath 输出的已经是世界空间坐标，
 再继承一次总控变换就会叠加两遍；总控的 `scale` 则单独接到每个 `*_path_grp` 上，
@@ -188,6 +207,7 @@ rig = variableFK.build(
 
 print(rig['joints'], rig['controls'], rig['global_ctrl'])
 print(rig['plane'], rig['skin_cluster'])
+print(rig['ride_curve'], rig['ride_skin'])
 ```
 
 [examples/demo.py](examples/demo.py) 会在 Maya 里从零搭一个测试场景。
@@ -200,6 +220,7 @@ mayapy examples/headless_test.py
 它会验证：骨骼间距均匀、**所有控制器的 `position` 和 `rotate` 都是干净的 0**、
 控制器落在自己的 `basePosition` 上、影响量在控制器处最大并在衰减边缘归零、
 归一化模式的和等于输入值、滑动与 clamp 生效、
+**链条弯曲后所有控制器仍精确贴在自己的骨骼上（误差 0）**、
 **整体缩放的长度和宽度都是 2 倍**、**控制器缩放按权重分摊且面片正好鼓 3 倍**、
 **截面缩放不改变链条长度**、`scaleX` 保持锁死、关掉缩放开关时确实锁死且不驱动骨骼、
 面片顶点数/蒙皮/跟随骨骼/不被双重变换、图里没有循环依赖、
@@ -215,3 +236,4 @@ mayapy examples/headless_test.py
 - 骨骼和控制器都是 **+X 指向链条前方、+Y 朝上**。如果曲线正好完全沿世界 Y 轴走，
   上方向向量会翻转 —— 把曲线稍微倾斜一点，或者事后改 `motionPath.worldUpVector`。
 - 前缀已存在时会直接报错，不会往已有绑定上叠加。
+
