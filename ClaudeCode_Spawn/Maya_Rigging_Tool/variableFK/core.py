@@ -196,6 +196,39 @@ def _build_fk_control(prefix, index, curve_shape, num_joints, position,
             'normalize': normalize_plug}
 
 
+def _build_ride_curve(prefix, joints):
+    """建一条跟着骨骼一起变形的曲线,给控制器当轨道。
+
+    控制器如果骑在未变形的基础曲线上,链条被别的控制器掰弯之后,
+    那些自己没动过的控制器就会留在原地、和骨骼脱节。
+    这条曲线的每个 CV 100% 绑给对应骨骼,于是它跟着链条走,
+    控制器也就跟着走了。
+
+    这里不会形成循环依赖:控制器的 rotate/scale 是输入属性,
+    它驱动骨骼、骨骼驱动这条曲线、曲线再摆放控制器的父组,
+    而 rotate 本身不依赖父组的变换。
+    """
+    points = [cmds.xform(joint, query=True, worldSpace=True,
+                         translation=True) for joint in joints]
+    # 必须用线性曲线:二次/三次是"逼近"CV 而不是穿过它,链条一弯
+    # 曲线就往内侧塌、弧长也变短,控制器于是落不到自己那根骨骼上
+    # (实测 40 骨骼弯 60 度,三次偏 0.31、二次偏 0.20,线性 0.00)。
+    # 代价是 motionPath 的朝向在每个 CV 处会有一点阶梯感,
+    # 但骨骼够密时每段的转角很小,而位置准确得多。
+    curve = cmds.curve(degree=1, point=points, name=prefix + 'ride_crv')
+    cmds.rename(nd.shape_of(curve), prefix + 'ride_crvShape')
+
+    skin = cmds.skinCluster(joints, curve, name=prefix + 'ride_skc',
+                            toSelectedBones=True, bindMethod=0, skinMethod=0,
+                            normalizeWeights=1, obeyMaxInfluences=False)[0]
+    for i, joint in enumerate(joints):
+        cmds.skinPercent(skin, '{0}.cv[{1}]'.format(curve, i),
+                         transformValue=[(joint, 1.0)])
+
+    cmds.setAttr(curve + '.visibility', 0)
+    return curve, skin
+
+
 def _build_bind_plane(prefix, joints, width):
     """沿骨骼链生成一块面片,并蒙皮到这些骨骼上。
 
@@ -432,7 +465,6 @@ def build(curve=None, prefix=DEFAULT_PREFIX, num_controls=4, num_joints=40,
         # 复制出来的 shape 会和源曲线共用短名,导致后面所有 plug 都有歧义
         cmds.rename(nd.shape_of(base_curve), prefix + 'base_crvShape')
         cmds.setAttr(base_curve + '.visibility', 0)
-        curve_shape = nd.shape_of(base_curve)
 
         # ---- 骨骼 --------------------------------------------------------
         points = sample_curve(base_curve, num_joints)
@@ -466,6 +498,25 @@ def build(curve=None, prefix=DEFAULT_PREFIX, num_controls=4, num_joints=40,
                 # 开着 SSC,缩放才不会沿链条一路累乘放大
                 cmds.setAttr(joint + '.segmentScaleCompensate', 1)
 
+        # ---- 被骨骼驱动的东西 ----------------------------------------------
+        # 这些都挂在 rig_grp 下而不是总控下:蒙皮结果里已经包含骨骼的
+        # 世界变换,再继承一层就会被变换两遍。
+        geo_grp = cmds.group(empty=True, name=prefix + 'geo_grp',
+                             parent=root_grp)
+        cmds.setAttr(geo_grp + '.inheritsTransform', 0)
+
+        # 控制器的轨道曲线。必须在建控制器之前做好,而且此刻骨骼还在
+        # 绑定姿势(所有控制器尚未存在),蒙皮才是干净的。
+        ride_curve, ride_skin = _build_ride_curve(prefix, joints)
+        ride_curve = cmds.ls(cmds.parent(ride_curve, geo_grp)[0], long=True)[0]
+        ride_shape = nd.shape_of(ride_curve)
+
+        plane = None
+        plane_skin = None
+        if create_plane:
+            plane, plane_skin = _build_bind_plane(prefix, joints, plane_width)
+            plane = cmds.parent(plane, geo_grp)[0]
+
         # ---- 控制器 ------------------------------------------------------
         controls = []
         for i in range(num_controls):
@@ -473,7 +524,7 @@ def build(curve=None, prefix=DEFAULT_PREFIX, num_controls=4, num_joints=40,
                 position = 0.0
             else:
                 position = i * (num_joints - 1) / float(num_controls - 1)
-            data = _build_fk_control(prefix, i + 1, curve_shape, num_joints,
+            data = _build_fk_control(prefix, i + 1, ride_shape, num_joints,
                                      position, falloff, control_size,
                                      use_falloff_min, use_falloff_max,
                                      normalized, use_control_scale)
@@ -485,18 +536,6 @@ def build(curve=None, prefix=DEFAULT_PREFIX, num_controls=4, num_joints=40,
                                   joint_scale_sums)
             controls.append(data['ctrl'])
 
-        # ---- 蒙皮面片 ----------------------------------------------------
-        plane = None
-        skin = None
-        if create_plane:
-            plane, skin = _build_bind_plane(prefix, joints, plane_width)
-            # 几何体挂在 rig_grp 下、而不是总控下:蒙皮结果里已经包含了
-            # 骨骼的世界变换,再继承一层就会被变换两遍。
-            geo_grp = cmds.group(empty=True, name=prefix + 'geo_grp',
-                                 parent=root_grp)
-            cmds.setAttr(geo_grp + '.inheritsTransform', 0)
-            plane = cmds.parent(plane, geo_grp)[0]
-
         bind_set = cmds.sets(joints, name=prefix + 'bind_joints_set')
         cmds.select(global_ctrl, replace=True)
     finally:
@@ -506,7 +545,9 @@ def build(curve=None, prefix=DEFAULT_PREFIX, num_controls=4, num_joints=40,
             'joints': joints, 'controls': controls,
             'curve': base_curve, 'bind_set': bind_set,
             'joint_grp': joint_grp, 'control_grp': ctrl_grp,
-            'plane': plane, 'skin_cluster': skin}
+            'geo_grp': geo_grp,
+            'ride_curve': ride_curve, 'ride_skin': ride_skin,
+            'plane': plane, 'skin_cluster': plane_skin}
 
 
 _SAFE_CHARS = set('abcdefghijklmnopqrstuvwxyz'
