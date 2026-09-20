@@ -4,6 +4,7 @@
     mayapy examples/headless_test.py
 """
 
+import math
 import os
 import sys
 
@@ -20,6 +21,27 @@ from variableFK import core
 
 def almost(a, b, tol=1e-4):
     return abs(a - b) < tol
+
+
+def expected_point(joints, position):
+    """position 处应该在的世界坐标。
+
+    轨道曲线是线性的,所以相邻两根骨骼之间就是直线插值 —— 这样
+    basePosition 不是整数时(比如 3 控制器配 12 骨骼)断言依然成立。
+    """
+    low = max(0, min(int(math.floor(position)), len(joints) - 1))
+    high = min(low + 1, len(joints) - 1)
+    blend = position - low
+    a = cmds.xform(joints[low], q=True, ws=True, t=True)
+    b = cmds.xform(joints[high], q=True, ws=True, t=True)
+    return [a[k] + (b[k] - a[k]) * blend for k in range(3)]
+
+
+def gap_to_joints(ctrl, joints, position):
+    """控制器到它在链条上应在位置的距离。"""
+    actual = cmds.xform(ctrl, q=True, ws=True, t=True)
+    want = expected_point(joints, position)
+    return sum((actual[k] - want[k]) ** 2 for k in range(3)) ** 0.5
 
 
 def row_width(plane, row):
@@ -77,14 +99,13 @@ def main():
                                      for c in rig['controls']])
 
     # --- 控制器正好落在自己的 basePosition 上 ---------------------------
+    # 轨道曲线是线性的,落位应该是精确的,不留逼近误差的余量
     for ctrl in rig['controls']:
-        base = cmds.getAttr(ctrl + '.basePosition')
-        joint = rig['joints'][int(round(base))]
-        cpos = cmds.xform(ctrl, q=True, ws=True, t=True)
-        jpos = cmds.xform(joint, q=True, ws=True, t=True)
-        if not almost(cpos[0], jpos[0], 0.05):
-            failures.append('ctrl %s off its joint: %.3f vs %.3f'
-                            % (ctrl, cpos[0], jpos[0]))
+        gap = gap_to_joints(ctrl, rig['joints'],
+                            cmds.getAttr(ctrl + '.basePosition'))
+        if gap > 1e-3:
+            failures.append('ctrl %s sits %.4f away from its place on the '
+                            'chain' % (ctrl, gap))
 
     # --- 旋转控制器只影响衰减范围内的骨骼 -------------------------------
     ctrl = rig['controls'][1]
@@ -107,6 +128,26 @@ def main():
     print('influenced joints: %d, peak %.4f at joint %d'
           % (len(inside), max(rotations), peak))
 
+    # --- 链条弯了以后,没动过的控制器也必须跟着走,不能留在原地 -----------
+    # 用一个大衰减把整条链带弯,然后检查每个控制器还贴在自己那根骨骼上。
+    cmds.setAttr(ctrl + '.falloffMax', 40)
+    cmds.setAttr(ctrl + '.rotateZ', 60)
+    drifted = [gap_to_joints(other, rig['joints'],
+                             cmds.getAttr(other + '.basePosition'))
+               for other in rig['controls']]
+    print('bent follow      : max gap %.5f between ctrl and its joint'
+          % max(drifted))
+    if max(drifted) > 1e-3:
+        failures.append('controls stayed behind when the chain bent, '
+                        'max gap %.4f' % max(drifted))
+    # 末端控制器确实被带离了原位(否则上面的检查可能只是"都没动")
+    tip_ctrl = cmds.xform(rig['controls'][-1], q=True, ws=True, t=True)
+    if almost(tip_ctrl[0], span, 1e-2) and almost(tip_ctrl[1], 0.0, 1e-2):
+        failures.append('tip control never moved, the bend test is vacuous')
+    print('tip ctrl moved to: [%.2f, %.2f, %.2f]' % tuple(tip_ctrl))
+    cmds.setAttr(ctrl + '.rotateZ', 10)
+    cmds.setAttr(ctrl + '.falloffMax', 5)
+
     # --- 归一化模式:被影响骨骼的旋转之和等于输入值 ---------------------
     cmds.setAttr(ctrl + '.normalize', 1)
     total = sum(cmds.getAttr(j + '.rotateZ') for j in rig['joints'])
@@ -128,8 +169,8 @@ def main():
         failures.append('after sliding, peak is at joint %d not 30' % peak)
     cpos = cmds.xform(ctrl, q=True, ws=True, t=True)
     jpos = cmds.xform(rig['joints'][30], q=True, ws=True, t=True)
-    if not almost(cpos[0], jpos[0], 0.05):
-        failures.append('control did not slide with position: %.3f vs %.3f'
+    if not almost(cpos[0], jpos[0], 1e-3):
+        failures.append('control did not slide with position: %.4f vs %.4f'
                         % (cpos[0], jpos[0]))
     print('after slide      : peak at joint %d, ctrl x %.3f' % (peak, cpos[0]))
 
@@ -141,7 +182,7 @@ def main():
     cmds.setAttr(ctrl + '.position', limit)
     cpos = cmds.xform(ctrl, q=True, ws=True, t=True)
     tip = cmds.xform(rig['joints'][-1], q=True, ws=True, t=True)
-    if not almost(cpos[0], tip[0], 1e-2):
+    if not almost(cpos[0], tip[0], 1e-3):
         failures.append('over-driven position not clamped: %.3f vs %.3f'
                         % (cpos[0], tip[0]))
     print('clamp test       : base %.0f + position %.0f -> x %.3f (tip %.3f)'
@@ -304,6 +345,23 @@ def main():
         failures.append('scale should be locked when the option is off')
     if driven:
         failures.append('joint.scale should stay free when the option is off')
+
+    # --- 不生成面片时轨道曲线照样要工作,basePosition 也可以不是整数 --------
+    cmds.file(new=True, force=True)
+    curve = cmds.curve(degree=1, point=[(0, 0, 0), (10, 0, 0)], name='c6')
+    rig4 = core.build(curve, prefix='nopl_', num_controls=3, num_joints=12,
+                      create_plane=False)
+    bases = [cmds.getAttr(c + '.basePosition') for c in rig4['controls']]
+    cmds.setAttr(rig4['controls'][0] + '.falloffMax', 12)
+    cmds.setAttr(rig4['controls'][0] + '.rotateZ', 45)
+    gaps = [gap_to_joints(c, rig4['joints'], b)
+            for c, b in zip(rig4['controls'], bases)]
+    print('no-plane bent    : bases %s, max gap %.6f' % (bases, max(gaps)))
+    if rig4['plane'] is not None:
+        failures.append('plane should not exist when create_plane is off')
+    if max(gaps) > 1e-3:
+        failures.append('without a plane the controls drifted %.4f'
+                        % max(gaps))
 
     # --- 边界情况:1 个控制器 / 最少骨骼 -----------------------------------
     cmds.file(new=True, force=True)
