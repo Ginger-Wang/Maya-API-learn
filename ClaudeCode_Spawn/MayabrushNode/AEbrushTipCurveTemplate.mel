@@ -60,6 +60,16 @@ global proc AEbrushTipCurveTemplate(string $nodeName)
             editorTemplate -addControl "flattenByPressure";
         editorTemplate -endLayout;
 
+        // 沿毛长的 5 段手动宽度倍率,从毛根排到笔尖。
+        // 乘在 brushType 廓形之上,全留 1.0 就是不干预。
+        editorTemplate -beginLayout "Width Profile (root -> tip)" -collapse 1;
+            editorTemplate -addControl "widthSegment1";
+            editorTemplate -addControl "widthSegment2";
+            editorTemplate -addControl "widthSegment3";
+            editorTemplate -addControl "widthSegment4";
+            editorTemplate -addControl "widthSegment5";
+        editorTemplate -endLayout;
+
         editorTemplate -beginLayout "Output Curve" -collapse 1;
             editorTemplate -addControl "samples";
             editorTemplate -addControl "curveDegree";
