@@ -58,6 +58,29 @@ def ensure_plugin():
         cmds.loadPlugin(PLUGIN)
 
 
+def set_width_profile(node, segments):
+    """设置 5 段手动宽度倍率,从毛根排到笔尖。
+
+    参数:
+        node     brushTipCurve 节点名
+        segments 长度 1-5 的倍率序列;不足 5 个时后面补 1.0
+
+    说明:
+        这是**乘在 brushType 廓形之上**的,全 1.0 表示不干预。
+        想完全自己塑形,先把 brushType 设成 "flat"(等宽廓形)再用这个。
+
+        例:笔肚鼓、笔锋尖的毛笔
+            set_brush_type(node, "flat")
+            set_width_profile(node, [0.8, 1.3, 1.2, 0.7, 0.05])
+    """
+    values = list(segments)[:5]
+    values += [1.0] * (5 - len(values))
+    for index, value in enumerate(values):
+        cmds.setAttr("{0}.widthSegment{1}".format(node, index + 1),
+                     max(0.0, value))
+    return values
+
+
 def set_brush_type(node, brush_type, apply_feel=True):
     """切换笔刷类型,顺带把该类型的推荐手感参数填上。
 
@@ -103,7 +126,7 @@ def build_brush(mesh=None, name="brush",
                 root_pos=(0.0, 3.0, 0.0), tip_pos=(0.0, 0.0, 0.0),
                 extra_positions=(), brush_type="calligraphy",
                 stiffness=None, samples=24, bristle_length=None,
-                build_mesh=True):
+                build_mesh=True, width_profile=None):
     """搭一套完整的笔刷:定位器 + brushTipCurve + 输出曲线,并接好全部连线。
 
     参数:
@@ -118,6 +141,7 @@ def build_brush(mesh=None, name="brush",
         samples         输出曲线的 CV 数
         bristle_length  毛长;None 表示按初始定位器间距量一次并写死
         build_mesh      是否顺带建一个 mesh 接上 outMesh(实体笔刷)
+        width_profile   5 段手动宽度倍率(毛根 → 笔尖);None 表示不干预类型廓形
 
     返回:
         dict,含 node / curve / curveTransform / locators / root / tip,
@@ -145,6 +169,8 @@ def build_brush(mesh=None, name="brush",
     set_brush_type(node, brush_type)
     if stiffness is not None:
         cmds.setAttr(node + ".stiffness", stiffness)
+    if width_profile is not None:
+        set_width_profile(node, width_profile)
 
     curve_transform = cmds.createNode("transform", name=name + "_curve")
     curve = cmds.createNode("nurbsCurve", name=name + "_curveShape",
