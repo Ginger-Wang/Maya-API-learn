@@ -19,7 +19,7 @@
 | [brush_utils.py](brush_utils.py) | 纯 `cmds` 的搭建函数 + 笔刷类型预设 |
 | [AEbrushTipCurveTemplate.mel](AEbrushTipCurveTemplate.mel) | 属性编辑器模板,在 AE 里切换类型时自动套推荐手感 |
 | [example_setup.py](example_setup.py) | 一键演示场景,跑完直接拖着玩 |
-| [selftest.py](selftest.py) | mayapy standalone 自测,102 项数值断言 |
+| [selftest.py](selftest.py) | mayapy standalone 自测,119 项数值断言 |
 
 ---
 
@@ -28,7 +28,7 @@
 一键演示:
 
 ```python
-import sys; sys.path.append(r"H:/DBackUp/EFBack/F/VS-Code_Project/ClaudeCode_Spawn/MayabrushNode")
+import sys; sys.path.append(r"H:/.../ClaudeCode_Spawn/MayabrushNode")
 import example_setup
 example_setup.build()
 ```
@@ -77,7 +77,13 @@ cmds.connectAttr(node + ".outCurve",             curveShape + ".create")
 cmds.connectAttr(curveXform + ".worldInverseMatrix[0]", node + ".parentInverseMatrix")
 ```
 
-想看到实体的毛,给输出曲线挂一个 sweep mesh(`Create > Sweep Mesh`)或者 extrude 即可,再把 `outPressure` 连到 sweep 的 taper 上,压得越深笔迹越粗。
+实体的毛直接从 `outMesh` 出,不需要再挂 sweep mesh:
+
+```python
+cmds.connectAttr(node + ".outMesh", brushMeshShape + ".inMesh")
+```
+
+> **`outCurve` 和 `outMesh` 必须挂在同一个 transform 下。** 节点只有一个 `parentInverseMatrix`,两个输出共用它;各给一个 transform 且位置不同的话,毛和曲线会错开。`build_brush` 已经这么建了。
 
 ---
 
@@ -97,6 +103,7 @@ cmds.connectAttr(curveXform + ".worldInverseMatrix[0]", node + ".parentInverseMa
 | `parentInverseMatrix` / `pim` | matrix | 单位阵 | 把结果转回曲线的本地空间 |
 | `brushType` / `bty` | enum | calligraphy | 笔刷类型,决定截面和廓形。见下节 |
 | `brushWidth` / `bwd` | double | 0.08 | 毛束基础半径,线性缩放整个截面 |
+| `widthSegment1..5` / `ws1..ws5` | double | 1.0 | **5 段手动宽度倍率**,毛根 → 笔尖。乘在类型廓形之上,见下节 |
 | `meshSides` / `msd` | int 3–64 | 8 | 截面一圈几个点 |
 | `spreadByPressure` / `spp` | double | 0.8 | 贴地段横向散开量。满压时宽度变 1.8 倍 |
 | `flattenByPressure` / `flp` | double 0–1 | 0.5 | 贴地段压扁量。满压时厚度减半 |
@@ -132,6 +139,42 @@ cmds.connectAttr(curveXform + ".worldInverseMatrix[0]", node + ".parentInverseMa
 **扁笔的宽面朝向**由笔杆矩阵的局部 X 轴沿曲线平行传输得到 —— 转笔杆就能转刷子朝向。这和垂直下压时决定倒向用的是同一根轴,不会各转各的。
 
 **推荐硬度只是起点,不锁定。** DG 节点的 `compute` 不允许回写自己的输入属性(会造成循环求值),所以「选了类型就有对应手感」这件事由 `brush_utils.set_brush_type()` 和 AE 模板在 UI 层代劳:切换类型时填一次,填完之后你调成多少就是多少,直到下次再换类型。
+
+### 手动宽度廓形(5 段)
+
+`widthSegment1..5` 是沿毛长的 5 个宽度倍率控制点,均匀落在 **t = 0 / 0.25 / 0.5 / 0.75 / 1.0**(毛根 → 笔尖),中间用 Catmull-Rom 平滑插值。
+
+它是**乘在 `brushType` 廓形之上**的,不是替代 —— 全留 1.0 就完全不干预,毛笔还是毛笔,只是某一段可以手动加粗或收细。
+
+```python
+brush_utils.set_width_profile(node, [0.8, 1.3, 1.2, 0.7, 0.05])
+```
+
+想**完全自己塑形**,把类型设成 `flat`(等宽廓形)再用这 5 段画:
+
+```python
+brush_utils.set_brush_type(node, "flat")
+brush_utils.set_width_profile(node, [0.8, 1.3, 1.2, 0.7, 0.05])   # 笔肚鼓、笔锋尖
+```
+
+实测出来的廓形(毛刷 + 上面那组值):
+
+```
+ t=0.00  0.1440  #################
+ t=0.20  0.2229  ##########################
+ t=0.30  0.2385  ############################   <- 笔肚最鼓
+ t=0.50  0.2160  #########################
+ t=0.70  0.1469  #################
+ t=0.90  0.0571  ######
+ t=1.00  0.0090  #                              <- 笔锋
+```
+
+几点行为:
+
+- **宽和厚同时缩放**。「这一段粗一点」指整个截面变粗,不是只往一个方向摊开 —— 否则扁笔调着调着纵横比就变了。
+- **控制点处精确取到设定值**。Catmull-Rom 过点,所以 `widthSegment3 = 2.0` 时 t=0.5 那一圈就是精确的 2 倍。
+- **局部性**:只调中间一段,两端纹丝不动。
+- 相邻段落差很大时 Catmull-Rom 会轻微过冲,负值会被夹到 0。某段设 0 就是把那一圈掐成中轴上的一点(合法,可以拿来做断毛)。
 
 ### 压力散开
 
@@ -214,7 +257,7 @@ sAir   = h / I(alpha, p)                  I 就是上式的归一化积分
 "H:/Program Files/Autodesk/Maya2025/bin/mayapy.exe" selftest.py
 ```
 
-已在 Maya 2025 跑通 **107/107**。覆盖:
+已在 Maya 2025 跑通 **119/119**。覆盖:
 
 - 悬空时是直线、首尾精确落在定位器上、共线性 5.9e-17
 - 弧长守恒:25 组压深 × 硬度组合,最大误差 **1.2e-07**
@@ -237,6 +280,7 @@ sAir   = h / I(alpha, p)                  I 就是上式的归一化积分
 - **压力散开**:笔尖环 0.160 → 0.261 单调变宽,毛根环始终不动;归零参数后回到原截面
 - **宽度线性**:`brushWidth` 翻倍则每一圈直径翻倍(误差 0)
 - **扁笔朝向**:笔杆 `rotateY` 90°,宽面轴从 X 精确转到 Z
+- **5 段宽度**:每段精确驱动对应控制环(0.160 -> 0.320)、只调中段两端不动、全段 ×2 等价于 `brushWidth` ×2、段间无阶梯、收到 0 不出 NaN
 - **UV**:数量 = `samples × (meshSides+1)`,u/v 各铺满 0-1,每个面都分到 UV face
 - **预设同步**:MEL 模板和 `brush_utils.BRUSH_PRESETS` 四种类型逐项一致
 - 退化输入:没连 mesh / 只有一个定位器 / 定位器重合 / 毛根在纸下 / `samples` 取边界 —— 均不崩溃、不出 NaN
