@@ -1,0 +1,85 @@
+// brushTipCurve 的属性编辑器模板。
+//
+// 作用有两个:
+//   1. 把属性分组排好,把 inMesh / controlMatrix 这种只该连线的隐藏掉;
+//   2. 在 AE 里切换 brushType 时,顺带把该类型的推荐手感参数填上。
+//
+// 第 2 条是「选了类型就有对应手感」的落点。节点自己做不到这件事 ——
+// DG 节点的 compute 不允许回写自己的输入属性,硬来会造成循环求值 ——
+// 所以只能由 UI 层代劳。
+//
+// 让 Maya 找到本文件:把所在目录加进 MAYA_SCRIPT_PATH,或者在 Maya 里执行
+//     source "H:/.../MayabrushNode/AEbrushTipCurveTemplate.mel";
+//
+// 注意:下面这张预设表和 brush_utils.py 的 BRUSH_PRESETS 是同一份数据,
+// 改了一边记得同步另一边。这里不去 import Python 模块,是为了不依赖
+// sys.path 配好 —— AE 模板在任何场景下都得能跑起来。
+
+
+global proc AEbrushTipCurveTypeChanged(string $attr)
+{
+    // $attr 形如 "brushTipCurve1.brushType"
+    string $parts[];
+    tokenize($attr, ".", $parts);
+    if (size($parts) < 2) return;
+    string $node = $parts[0];
+
+    int $type = `getAttr $attr`;
+    if ($type < 0 || $type > 3) return;
+
+    //                 calligraphy  round  flat   fan
+    float $stiffness[] = {0.20,     0.50,  0.80,  0.65};
+    float $width[]     = {0.06,     0.07,  0.09,  0.09};
+    float $spread[]    = {1.2,      0.8,   0.5,   0.7 };
+    float $flatten[]   = {0.65,     0.50,  0.35,  0.45};
+
+    setAttr ($node + ".stiffness")         $stiffness[$type];
+    setAttr ($node + ".brushWidth")        $width[$type];
+    setAttr ($node + ".spreadByPressure")  $spread[$type];
+    setAttr ($node + ".flattenByPressure") $flatten[$type];
+}
+
+
+global proc AEbrushTipCurveTemplate(string $nodeName)
+{
+    editorTemplate -beginScrollLayout;
+
+        editorTemplate -beginLayout "Brush" -collapse 0;
+            // 切换类型时调用上面那个 proc 填推荐手感。填完就不管了,
+            // 之后你把 stiffness 调成多少就是多少,直到下次再换类型。
+            editorTemplate -addControl "brushType" "AEbrushTipCurveTypeChanged";
+            editorTemplate -addControl "bristleLength";
+            editorTemplate -addControl "stiffness";
+            editorTemplate -addControl "envelope";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Brush Mesh" -collapse 0;
+            editorTemplate -addControl "brushWidth";
+            editorTemplate -addControl "meshSides";
+            editorTemplate -addControl "spreadByPressure";
+            editorTemplate -addControl "flattenByPressure";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Output Curve" -collapse 1;
+            editorTemplate -addControl "samples";
+            editorTemplate -addControl "curveDegree";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Contact" -collapse 1;
+            editorTemplate -addControl "contactOffset";
+            editorTemplate -addControl "conformToSurface";
+        editorTemplate -endLayout;
+
+        // 这几个只该用连线驱动,摆在 AE 里只会让人手滑改坏
+        editorTemplate -suppress "inMesh";
+        editorTemplate -suppress "controlMatrix";
+        editorTemplate -suppress "parentInverseMatrix";
+        editorTemplate -suppress "outCurve";
+        editorTemplate -suppress "outMesh";
+        editorTemplate -suppress "outContactPoint";
+
+        AEdependNodeTemplate $nodeName;
+        editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+}
