@@ -3,7 +3,7 @@
 brushTipCurve 的一键演示场景。
 
 在 Maya 中运行:
-    import sys; sys.path.append(r"H:/ClaudeCode_Spawn/MayabrushNode")
+    import sys; sys.path.append(r"H:/.../ClaudeCode_Spawn/MayabrushNode")
     import example_setup
     example_setup.build()
 
