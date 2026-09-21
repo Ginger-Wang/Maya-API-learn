@@ -127,6 +127,10 @@ BRUSH_STIFFNESS = {
 # 末端那一圈会退化成重合点,生成一圈零面积的面,Maya 的法线和 UV 都会出问题。
 MIN_SECTION_SCALE = 0.02
 
+# 手动宽度控制的段数。5 个控制点均匀落在毛根(t=0)到笔尖(t=1)之间,
+# 即 t = 0, 0.25, 0.5, 0.75, 1.0。
+WIDTH_SEGMENTS = 5
+
 
 # ---------------------------------------------------------------------------
 # 纯几何辅助
@@ -380,6 +384,48 @@ def _section_scale(brush_type, t):
             max(thickness * aspect, MIN_SECTION_SCALE * aspect))
 
 
+def _width_multiplier(segments, t):
+    """手动宽度控制在 t 处的倍率。
+
+    segments 是 5 个控制点,均匀落在 t = 0 / 0.25 / 0.5 / 0.75 / 1.0 上,
+    中间用 Catmull-Rom 过点插值。全是 1.0 时不改变任何东西。
+
+    说明:
+        这是**乘在 brushType 廓形之上**的倍率,不是替代它。所以毛笔还是毛笔,
+        只是某一段可以手动加粗或收细。想完全自己塑形,把 brushType 设成 flat
+        (等宽廓形)再用这 5 段画出想要的形状。
+
+        用 Catmull-Rom 而不是线性插值,是为了让调完一段之后周围平滑过渡 ——
+        线性插值会在控制点处留下折角,沿着毛看过去是一圈一圈的棱。
+        代价是相邻段落差很大时会轻微过冲,所以最后夹一下负值。
+    """
+    count = len(segments)
+    if count == 0:
+        return 1.0
+    if count == 1:
+        return max(0.0, segments[0])
+
+    x = _clamp(t, 0.0, 1.0) * (count - 1)
+    index = int(x)
+    if index > count - 2:
+        index = count - 2
+    local = x - index
+
+    p1 = segments[index]
+    p2 = segments[index + 1]
+    # 两端各镜像延伸一个虚拟控制点,补齐 Catmull-Rom 需要的四个点
+    p0 = segments[index - 1] if index > 0 else 2.0 * p1 - p2
+    p3 = segments[index + 2] if index + 2 < count else 2.0 * p2 - p1
+
+    t2 = local * local
+    t3 = t2 * local
+    value = 0.5 * (2.0 * p1
+                   + (p2 - p0) * local
+                   + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2
+                   + (3.0 * p1 - p0 - 3.0 * p2 + p3) * t3)
+    return max(0.0, value)
+
+
 def _parallel_frames(points, seed):
     """沿折线做平行传输,给每个点算一个截面坐标系。
 
@@ -438,6 +484,7 @@ class BrushTipCurveNode(ompx.MPxNode):
 
     aBrushType = om.MObject()
     aBrushWidth = om.MObject()
+    aWidthSegments = []          # 5 个,毛根 -> 笔尖
     aMeshSides = om.MObject()
     aSpreadByPressure = om.MObject()
     aFlattenByPressure = om.MObject()
@@ -780,13 +827,17 @@ class BrushTipCurveNode(ompx.MPxNode):
         for i in range(rings):
             t = i / float(rings - 1)
             width_scale, thick_scale = _section_scale(opts["type"], t)
+            # 手动 5 段控制是乘在类型廓形之上的,宽和厚同时缩放 ——
+            # 「这一段粗一点」指的是整个截面变粗,不是只往一个方向摊开,
+            # 否则扁笔调着调着纵横比就变了。
+            manual = _width_multiplier(opts["segments"], t)
 
             if landing is None:
                 pressed = 0.0
             else:
                 pressed = _smoothstep(landing - fade, landing + fade * 0.5, i)
-            half_w = width * width_scale * (1.0 + spread * pressed)
-            half_h = width * thick_scale * (1.0 - flatten * pressed)
+            half_w = width * width_scale * manual * (1.0 + spread * pressed)
+            half_h = width * thick_scale * manual * (1.0 - flatten * pressed)
 
             center = points[i]
             side, up = frames[i][1], frames[i][2]
@@ -1020,6 +1071,8 @@ class BrushTipCurveNode(ompx.MPxNode):
             "spread": max(0.0, data.inputValue(self.aSpreadByPressure).asDouble()),
             "flatten": _clamp(data.inputValue(self.aFlattenByPressure).asDouble(),
                               0.0, 1.0),
+            "segments": [max(0.0, data.inputValue(attr).asDouble())
+                         for attr in self.aWidthSegments],
             # 截面的「宽」方向种子:用笔杆局部 X 轴,和垂直下压时的倒向参考同一个轴,
             # 这样转笔杆既转倒向也转刷子朝向,不会各转各的。
             "seed": x_axis,
@@ -1195,6 +1248,19 @@ def nodeInitializer():
     nAttr.setMin(0.0)
     nAttr.setSoftMax(0.5)
 
+    # widthSegment1..5:沿毛长的 5 段手动宽度倍率,均匀落在 t=0/0.25/0.5/0.75/1。
+    # 乘在 brushType 廓形之上,全留 1.0 就是不干预。中间用 Catmull-Rom 平滑过渡。
+    # 想完全自己塑形:把 brushType 设成 flat(等宽),再用这 5 段画廓形。
+    cls.aWidthSegments = []
+    for index in range(WIDTH_SEGMENTS):
+        attr = nAttr.create("widthSegment{0}".format(index + 1),
+                            "ws{0}".format(index + 1),
+                            om.MFnNumericData.kDouble, 1.0)
+        nAttr.setKeyable(True)
+        nAttr.setMin(0.0)
+        nAttr.setSoftMax(3.0)
+        cls.aWidthSegments.append(attr)
+
     # meshSides:截面一圈几个点。8 够圆了;扁笔可以少一些,毛笔想要光滑锥尖可以给 12。
     cls.aMeshSides = nAttr.create("meshSides", "msd",
                                   om.MFnNumericData.kInt, 8)
@@ -1257,7 +1323,8 @@ def nodeInitializer():
               cls.aContactOffset, cls.aConformToSurface,
               cls.aParentInverseMatrix,
               cls.aBrushType, cls.aBrushWidth, cls.aMeshSides,
-              cls.aSpreadByPressure, cls.aFlattenByPressure)
+              cls.aSpreadByPressure, cls.aFlattenByPressure) \
+        + tuple(cls.aWidthSegments)
     outputs = (cls.aOutCurve, cls.aOutMesh, cls.aOutPressure, cls.aOutContact,
                cls.aOutContactPoint)
 
