@@ -1042,6 +1042,87 @@ def test_flat_brush_follows_shaft_roll():
         tuple(round(v, 4) for v in axis90)))
 
 
+def test_width_segments():
+    """验证 5 段手动宽度控制。
+
+    验证内容:
+        - 全留 1.0 时不改变任何东西(和没这个功能一样);
+        - 5 个控制点精确落在 t = 0 / 0.25 / 0.5 / 0.75 / 1 上,调哪段哪段变;
+        - 只调中间一段,两端基本不动(局部性);
+        - 全部乘 2 等价于 brushWidth 乘 2;
+        - 段之间是平滑过渡,不出现阶梯。
+    为什么重要:
+        这是让绑定师自己塑笔锋形状的手段。它是**乘在 brushType 廓形之上**的,
+        所以默认值必须是干净的 1.0 —— 一旦默认值让廓形发生了变化,
+        所有类型的廓形断言就都不作数了。
+    场景构造:
+        毛刷(等宽廓形,便于直接读出倍率),悬空避免压力散开干扰。
+        samples=21 让 5 个控制点正好落在第 0/5/10/15/20 圈采样上。
+    """
+    print("[test] five width segments reshape the brush")
+    rig = build(root_pos=(0.0, 3.0, 0.0), tip_pos=(0.0, 1.5, 0.0),
+                bristleLength=1.2, brushType=2, samples=21, plane=False)
+    node = rig["node"]
+    control_rings = (0, 5, 10, 15, 20)
+
+    base = [ring_diameter(r) for r in mesh_rings(rig)]
+    check(max(base) - min(base) < 1e-9,
+          "defaults are a clean 1.0 (flat brush stays uniform)")
+
+    # 逐段单独拉到 2.0,检查对应那一圈确实翻倍
+    for index, ring_index in enumerate(control_rings):
+        for reset in range(5):
+            cmds.setAttr("{0}.widthSegment{1}".format(node, reset + 1), 1.0)
+        cmds.setAttr("{0}.widthSegment{1}".format(node, index + 1), 2.0)
+        rings = mesh_rings(rig)
+        got = ring_diameter(rings[ring_index])
+        check(close(got, base[ring_index] * 2.0, 1e-6),
+              "widthSegment{0} drives ring {1} ({2:.4f} -> {3:.4f})".format(
+                  index + 1, ring_index, base[ring_index], got))
+
+    # 只动中间那段,两端不该跟着动
+    for reset in range(5):
+        cmds.setAttr("{0}.widthSegment{1}".format(node, reset + 1), 1.0)
+    cmds.setAttr(node + ".widthSegment3", 2.5)
+    rings = mesh_rings(rig)
+    check(close(ring_diameter(rings[0]), base[0], 1e-6)
+          and close(ring_diameter(rings[-1]), base[-1], 1e-6),
+          "bulging the middle leaves both ends untouched")
+    # 控制点本身(环 5)是 1.0,Catmull-Rom 在控制点处精确取到控制点值,
+    # 所以它等于基准;鼓包只在控制点**之间**扩散出去。
+    widths = [ring_diameter(r) for r in rings]
+    check(widths[10] > widths[8] > widths[6] >= widths[5] - 1e-9,
+          "the bulge falls off smoothly between control points "
+          "({0:.4f} > {1:.4f} > {2:.4f} >= {3:.4f})".format(
+              widths[10], widths[8], widths[6], widths[5]))
+
+    # 平滑性:相邻环的直径变化不该出现阶梯式突跳
+    diameters = [ring_diameter(r) for r in rings]
+    steps = [abs(diameters[i] - diameters[i - 1])
+             for i in range(1, len(diameters))]
+    check(max(steps) < sum(steps) / len(steps) * 3.0,
+          "no stair-stepping between segments (max step {0:.5f}, mean {1:.5f})".format(
+              max(steps), sum(steps) / len(steps)))
+
+    # 全部乘 2 == brushWidth 乘 2
+    for reset in range(5):
+        cmds.setAttr("{0}.widthSegment{1}".format(node, reset + 1), 2.0)
+    doubled = [ring_diameter(r) for r in mesh_rings(rig)]
+    worst = max(abs(doubled[i] - base[i] * 2.0) for i in range(len(base)))
+    check(worst < 1e-6,
+          "scaling all five equals scaling brushWidth (worst {0:.2e})".format(worst))
+
+    # 收到 0:该段塌成中轴上的一点,但不能崩、不能出 NaN
+    for reset in range(5):
+        cmds.setAttr("{0}.widthSegment{1}".format(node, reset + 1), 1.0)
+    cmds.setAttr(node + ".widthSegment5", 0.0)
+    rings = mesh_rings(rig)
+    check(ring_diameter(rings[-1]) < 1e-9,
+          "a segment at 0 pinches that ring shut")
+    check(all(v == v for r in rings for p in r for v in p),
+          "pinching to zero produces no NaN")
+
+
 def test_mesh_has_usable_uvs():
     """验证笔刷 mesh 带可用的 UV。
 
@@ -1221,6 +1302,7 @@ def main():
     test_pressure_spreads_the_mesh()
     test_brush_width_scales_section()
     test_flat_brush_follows_shaft_roll()
+    test_width_segments()
     test_mesh_has_usable_uvs()
     test_brush_presets_stay_in_sync()
     test_degenerate_inputs()
